@@ -6,7 +6,7 @@
 <title>LV2026 // Results Tracker</title>
 <meta name="description" content="Lokalne volitve 2026: župani, občinski sveti in skupnosti v vseh 212 občinah, z zemljevidom in izidi v živo.">
 <meta property="og:type" content="website"><meta property="og:title" content="LV2026 // RESULTS TRACKER"><meta property="og:description" content="Lokalne volitve 2026: župani, občinski sveti in skupnosti v vseh 212 občinah, z zemljevidom in izidi v živo.">
-<meta property="og:url" content="https://collarcore.github.io/silver-invention/"><meta property="og:image" content="https://collarcore.github.io/silver-invention/og.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://collarcore.github.io/silver-invention/og.png">
+<link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="icon" href="favicon.png" sizes="32x32" type="image/png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta property="og:url" content="https://collarcore.github.io/silver-invention/"><meta property="og:image" content="https://collarcore.github.io/silver-invention/og.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://collarcore.github.io/silver-invention/og.png">
 <meta name="theme-color" content="#12b33a">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
@@ -153,6 +153,7 @@ main.flash section,main.flash header,main.flash>details{animation:fl 2.2s ease-o
 .log li{display:grid;grid-template-columns:38px 86px 1fr;gap:8px;align-items:baseline;padding:4px 0;border-bottom:1px solid var(--line);cursor:pointer}
 .log li:last-child{border:0}.log li.new{animation:lin .5s ease-out}
 .log time{color:var(--dim)}.log b{color:var(--hi);font-weight:700}.log span{color:var(--dim)}
+.solo{font-style:normal;font-size:9px;letter-spacing:.08em;color:var(--bg);background:var(--g);padding:1px 5px;margin-left:8px;white-space:nowrap;vertical-align:1px}
 .tag{font-size:10px;letter-spacing:.06em;white-space:nowrap}
 .t-new{color:var(--dim)}.t-lead{color:var(--amb)}.t-maj{color:var(--g)}.t-drop{color:var(--red)}
 #logn{color:var(--dim);font-weight:400;letter-spacing:.06em}
@@ -173,7 +174,7 @@ main.flash section,main.flash header,main.flash>details{animation:fl 2.2s ease-o
 <div class="col colL">
 <section id="s-map"><h2>MUNICIPAL GRID <span>// ZEMLJEVID OBČIN</span></h2><div class="body">
   <div class="btns layers" style="margin-top:0">
-    <button data-mode="pred" class="on">ŽUPAN</button><button data-mode="svet">SVET</button><button data-mode="zup">ODLOČENO</button><button data-mode="raz">RAZLIKA</button><button data-mode="k2">2. KROG</button><button data-mode="udel">UDELEŽBA</button><button data-mode="odst">ODSTOPANJE</button>
+    <button data-mode="kand">KANDIDATI</button><button data-mode="pred" class="on">ŽUPAN</button><button data-mode="svet">SVET</button><button data-mode="zup">ODLOČENO</button><button data-mode="raz">RAZLIKA</button><button data-mode="k2">2. KROG</button><button data-mode="udel">UDELEŽBA</button><button data-mode="odst">ODSTOPANJE</button>
   </div>
   <div class="mapwrap"><svg id="map" role="img" aria-label="Zemljevid občin Slovenije"></svg><div class="zoom"><button id="zi" aria-label="Povečaj"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3v10M3 8h10"/></svg></button><button id="zo" aria-label="Pomanjšaj"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10"/></svg></button><button id="zr" aria-label="Ponastavi pogled" disabled><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.2 8a4.8 4.8 0 1 0 1.5-3.5"/><path d="M3 2.6v2.6h2.6"/></svg></button></div></div>
   <div class="legend" id="legend"></div>
@@ -421,7 +422,10 @@ function listTotals(m){
 function bar(label,sub,val,max,color,text,mark){
   return `<div class="row" data-b="${esc(label+"|"+(sub||""))}"><div class="rh"><span class="lb">${esc(label)}${sub?`<small>${esc(sub)}</small>`:''}</span><span class="vl">${text}</span></div><div class="tr"><i style="width:${max?Math.min(100,val/max*100):0}%;background:${color}"></i>${mark!=null?`<u style="left:${mark}%"></u>`:''}</div></div>`;
 }
-const nrow=(label,sub,color)=>`<div class="nrow"><i style="background:${color}"></i><span>${esc(label)}${sub?`<small>${esc(sub)}</small>`:''}</span></div>`;
+const SOLO='<em class="solo">BREZ PROTIKANDIDATA</em>';
+const nrow=(label,sub,color,solo)=>`<div class="nrow"><i style="background:${color}"></i><span>${esc(label)}${solo?SOLO:''}${sub?`<small>${esc(sub)}</small>`:''}</span></div>`;
+const solo=m=>!m.zt&&m.zup.length===1;
+const soloVE=C=>{const n={};C.forEach(c=>n[c.ve]=(n[c.ve]||0)+1);return c=>n[c.ve]===1};
 const empty=t=>`<div class="empty">${t||'Čakam na prve izide.'}</div>`;
 const show=(id,on)=>{$('#s-'+id).hidden=!on};
 const stamp=s=>{if(!s)return '–';const m=String(s).match(/(\d{4})-(\d\d)-(\d\d)T(\d\d):(\d\d)/);return m?`${+m[3]}. ${+m[2]}. ${m[4]}:${m[5]}`:esc(s)};
@@ -497,6 +501,7 @@ function render(){
     T.map(x=>`<button class="card ${x.d>0?'up':'dn'}" data-m="${key(x.m.naz)}"><b>${esc(x.m.naz)}</b><span class="${x.d>0?'pos':'neg'}">${pp(x.d)}</span> <span>· udeležba ${pc(x.m.udel)}</span></button>`).join('')+`</div>`;
 
   renderPre(A,rep);renderRec(A,rep,tur);
+  if(!S.modeSet){const w=rep.length?'pred':'kand';if(S.mode!==w){S.mode=w;document.querySelectorAll('[data-mode]').forEach(b=>b.classList.toggle('on',b.dataset.mode===w))}}
   $('#tip').dataset.k='';renderLog();renderMap(tur);renderMuni();animateChanges();
 }
 
@@ -540,7 +545,7 @@ function renderMap(tur){
   const sumU=tur.reduce((a,m)=>a+m.upr,0),sumG=tur.reduce((a,m)=>a+m.glas,0);
   const natU=S.nat&&S.nat.glas?S.nat.glas/S.nat.upr:sumU?sumG/sumU:0;
   const rank=fn=>{const by=new Map();all().forEach(m=>{const g=fn(m);if(g){const e=by.get(g.l)||[0,g.c];e[0]++;by.set(g.l,e)}});return [...by.entries()].sort((a,b)=>b[1][0]-a[1][0])};
-  const gP=m=>m.zt?group(m.zup[0].pred):null,gS=m=>{if(maj(m))return{l:'VEČINSKI SISTEM (BREZ LIST)',c:'var(--dim)'};const l=leadList(m);return l?group(l.naz):null};
+  const gP=m=>m.zt||solo(m)?group(m.zup[0].pred):null,gS=m=>{if(maj(m))return{l:'VEČINSKI SISTEM (BREZ LIST)',c:'var(--dim)'};const l=leadList(m);return l?group(l.naz):null};
   const P=S.mode==='pred'?rank(gP):S.mode==='svet'?rank(gS):null;
   const ro=m=>m.k2||(m.zt&&m.zup[0].prc<=.5&&m.zup[1]);
   document.querySelectorAll('#map path').forEach(p=>{
@@ -549,6 +554,8 @@ function renderMap(tur){
     else if(S.mode==='odst'){if(m.glas&&m.upr){const d=Math.max(-1,Math.min(1,(m.udel-natU)/.15));f=d>=0?'var(--g)':'var(--red)';o=.22+.78*Math.abs(d)}}
     else if(S.mode==='svet'){const g=gS(m);if(g)f=g.c}
     else if(S.mode==='k2'){if(m.k2&&m.k2.zt){f='var(--g)';o=.35+.65*Math.min(Math.max(m.k2.zup[0].prc-.5,0)/.25,1)}else if(ro(m))f='var(--amb)'}
+    else if(S.mode==='kand'){const n=m.zup.length;if(n===1)f='var(--amb)';else if(n>1){f='var(--g)';o=n===2?.28:n===3?.5:n<6?.75:1}}
+    else if(solo(m)){if(S.mode==='zup')f='var(--g)';else if(S.mode==='pred')f=gP(m).c}
     else if(m.zt){
       if(S.mode==='zup')f=m.zup[0].prc>.5?'var(--g)':'var(--amb)';
       else if(S.mode==='pred')f=gP(m).c;
@@ -563,15 +570,16 @@ function renderMap(tur){
   $('#legend').innerHTML=S.mode==='udel'?(us.length?`<span>${pc(lo)}${ramp(mix('--g',25),'var(--g)')}${pc(hi)}</span>`:'')+nd
     :S.mode==='odst'?`<span>−15\u00a0o.\u00a0t.${ramp('var(--red)','var(--nd) 50%,var(--g)')}+15\u00a0o.\u00a0t. od državne udeležbe</span>`+nd
     :S.mode==='raz'?`<span>tesno${ramp('var(--c2)',mix('--c2',25))}40+\u00a0o.\u00a0t. prednosti</span>`+nd
+    :S.mode==='kand'?'<span>število kandidatov za župana:</span>'+sw('var(--amb)','1 · brez protikandidata')+[[2,28],[3,50],['4–5',75],['6+',100]].map(([t,p])=>sw(mix('--g',p),t)).join('')+nd
     :S.mode==='pred'?'<span>predlagatelj vodilnega kandidata za župana:</span>'+cats()
     :S.mode==='svet'?'<span>lista z največ glasovi za občinski svet:</span>'+cats()
     :S.mode==='k2'?sw('var(--g)','izid drugega kroga (močnejša barva = večja prednost)')+sw('var(--amb)','drugi krog, še brez izida')+sw('var(--nd)','brez drugega kroga')
-    :sw('var(--g)','vodilni nad 50 %')+sw('var(--amb)','kaže na drugi krog')+nd;
+    :sw('var(--g)','vodilni nad 50 % ali brez protikandidata')+sw('var(--amb)','kaže na drugi krog')+nd;
   S.natU=natU;renderInfo();
 }
 function renderInfo(){
   const m=S.M.get(S.hov||S.cur),l=leadList(m),natU=S.natU||0;
-  $('#mapinfo').innerHTML=`<div><b>${esc(m.naz)}</b><br><span style="color:var(--dim)">${m.glas?'udeležba '+pc(m.udel)+' ('+pp(m.udel-natU)+')':'udeležba –'}<br>Župan: ${m.zt?esc(m.zup[0].naz)+' · '+esc(m.zup[0].pred||'–')+' · '+pc(m.zup[0].prc)+(m.zup[1]?' · prednost '+(marg(m)*100).toFixed(1).replace('.',',')+'\u00a0o.\u00a0t.':' · brez protikandidata'):'ni izidov'}<br>Svet: ${maj(m)?'večinski sistem · izvoljenih '+m.svet.filter(x=>x.izv==1).length:l?esc(l.naz)+' · '+(m.full?pc(l.prc):glasov(l.gl))+(l.man?' · mandati:\u00a0'+l.man:''):'ni podatkov'}${m.k2&&m.k2.zt?'<br>2. krog: '+esc(m.k2.zup[0].naz)+' '+pc(m.k2.zup[0].prc):''}</span></div>`+(S.hov&&S.hov!==S.cur?'':'<button id="open">PODROBNO</button>');
+  $('#mapinfo').innerHTML=`<div><b>${esc(m.naz)}</b><br><span style="color:var(--dim)">${m.glas?'udeležba '+pc(m.udel)+' ('+pp(m.udel-natU)+')':'udeležba –'}<br>Župan: ${m.zt?esc(m.zup[0].naz)+' · '+esc(m.zup[0].pred||'–')+' · '+pc(m.zup[0].prc)+(m.zup[1]?' · prednost '+(marg(m)*100).toFixed(1).replace('.',',')+'\u00a0o.\u00a0t.':' · brez protikandidata'):preZ(m)}<br>Svet: ${!hasS(m)?preS(m):maj(m)?'večinski sistem · izvoljenih '+m.svet.filter(x=>x.izv==1).length:l?esc(l.naz)+' · '+(m.full?pc(l.prc):glasov(l.gl))+(l.man?' · mandati:\u00a0'+l.man:''):'ni podatkov'}${m.k2&&m.k2.zt?'<br>2. krog: '+esc(m.k2.zup[0].naz)+' '+pc(m.k2.zup[0].prc):''}</span></div>`+(S.hov&&S.hov!==S.cur?'':'<button id="open">PODROBNO</button>');
 }
 
 function renderMuni(){
@@ -583,14 +591,14 @@ function renderMuni(){
     <div class="kpi"><b>${m.tip===2?'proporc.':m.tip===1?'večinski':'–'}</b><small>sistem za svet</small></div></div>`;
   h+=`<h3>ŽUPAN</h3>`;
   h+=m.zt?m.zup.map(c=>bar(c.naz,c.pred,c.prc,1,group(c.pred).c,pc(c.prc)+' · '+fmt(c.gl),50)).join('')+`<p class="note" style="margin-top:10px">${m.zup[0].prc>.5?'Vodilni je trenutno nad 50 %.':'Nihče nad 50 % — kaže na drugi krog.'} Rdeča črta označuje 50 %.</p>`
-    :m.zup.length?`<p class="note">Kandidati (${m.zup.length}); izidov še ni.</p>`+m.zup.map(c=>nrow(c.naz,c.pred,group(c.pred).c)).join(''):empty('Ni izidov.');
+    :m.zup.length?`<p class="note">${solo(m)?'En sam kandidat: izvoljen bo, če prejme večino veljavnih glasov, torej praktično zagotovo.':'Kandidati ('+m.zup.length+'); izidov še ni.'}</p>`+m.zup.map(c=>nrow(c.naz,c.pred,group(c.pred).c,solo(m))).join(''):empty('Ni izidov.');
   if(m.k2)h+=`<h3>ŽUPAN — DRUGI KROG</h3>`+(m.k2.zt?m.k2.zup.map(c=>bar(c.naz,c.pred,c.prc,1,group(c.pred).c,pc(c.prc)+' · '+fmt(c.gl),50)).join('')+(m.k2.upr?`<p class="note" style="margin-top:10px">Udeležba v drugem krogu: ${pc(m.k2.glas/m.k2.upr)}.</p>`:''):empty('Čakam na izide drugega kroga.'));
   h+=`<h3>OBČINSKI SVET</h3>`;
   const L=listTotals(m),seats=L.reduce((a,l)=>a+l.man,0);
   const anyV=m.svet.some(x=>x.gl>0||x.man>0||x.izv==1);
   if(!m.svet.length)h+=empty('Ni podatkov o svetu.');
   else if(!anyV){
-    if(maj(m)){const C=[...m.svet].sort((a,b)=>a.ve-b.ve);h+=`<p class="note">Večinski sistem, kandidati (${C.length}) po volilnih enotah; izidov še ni.</p>`+C.map(c=>nrow(c.naz,'VE '+c.ve+(c.pred?' · '+c.pred:''),group(c.pred).c)).join('')}
+    if(maj(m)){const C=[...m.svet].sort((a,b)=>a.ve-b.ve);const so=soloVE(C),ns=C.filter(so).length;h+=`<p class="note">Večinski sistem, kandidati (${C.length}) po volilnih enotah; izidov še ni.${ns?' Brez protikandidata v svoji volilni enoti: '+ns+'.':''}</p>`+C.map(c=>nrow(c.naz,'VE '+c.ve+(c.pred?' · '+c.pred:''),group(c.pred).c,so(c))).join('')}
     else h+=`<p class="note">Liste (${L.length}); izidov še ni.</p>`+L.map(l=>nrow(l.naz,'',colorOf(l.naz))).join('');
   }else if(m.tip===1&&!seats){
     const C=[...m.svet].sort((a,b)=>String(a.ve).localeCompare(String(b.ve),'sl',{numeric:true})||b.gl-a.gl),mx=Math.max(...C.map(c=>c.gl),1);
@@ -781,7 +789,7 @@ function subUnitHtml(k,u,i){
   }else{
     const any=u.V.some(c=>c.gl>0),multi=new Set(u.V.map(c=>c.ve)).size>1;
     const C=any?[...u.V].sort((a,b)=>a.ve-b.ve||b.gl-a.gl):u.V,mx=Math.max(...C.map(c=>c.gl),1);
-    h+=any||C.some(c=>c.izv===1)?C.map(c=>bar(c.naz,(multi?'VE '+c.ve+' · ':'')+c.pred,c.gl,any?mx:0,c.izv===1?'var(--g)':'var(--dim)',any?fmt(c.gl)+(c.izv===1?' · izvoljen(a)':''):(c.izv===1?'izvoljen(a)':''))).join(''):`<p class="note">Kandidati (${C.length}); izidov še ni.</p>`+C.map(c=>nrow(c.naz,(multi?'VE '+c.ve+' · ':'')+c.pred,group(c.pred).c)).join('');
+    h+=any||C.some(c=>c.izv===1)?C.map(c=>bar(c.naz,(multi?'VE '+c.ve+' · ':'')+c.pred,c.gl,any?mx:0,c.izv===1?'var(--g)':'var(--dim)',any?fmt(c.gl)+(c.izv===1?' · izvoljen(a)':''):(c.izv===1?'izvoljen(a)':''))).join(''):(so=>`<p class="note">Kandidati (${C.length}); izidov še ni.</p>`+C.map(c=>nrow(c.naz,(multi?'VE '+c.ve+' · ':'')+c.pred,group(c.pred).c,so(c))).join(''))(soloVE(C));
   }
   return h;
 }
@@ -915,13 +923,16 @@ $('#sel').onchange=e=>pick(e.target.value);
 document.addEventListener('change',e=>{if(e.target.id!=='subsel')return;
   const k=S.cur,i=+e.target.value,m=S.M.get(k),sd=S.src==='sim'?simSub(m):SUB.get(k),u=sd&&sd.units[i],y=scrollY;
   S.subSel={k,i};$('#subbox').innerHTML=u?subUnitHtml(k,u,i):'';if(Math.abs(scrollY-y)>2)scrollTo(0,y)});
+const preZ=m=>solo(m)?esc(m.zup[0].naz)+' · brez protikandidata':m.zup.length?kand(m.zup.length):'ni podatkov';
+const preS=m=>{if(!m.svet.length)return 'ni podatkov';if(m.tip===1&&!m.svet.some(x=>x.man)){const so=soloVE(m.svet),n=m.svet.filter(so).length;return 'večinski sistem · '+kand(m.svet.length)+(n?' · brez protikandidata: '+n:'')}return listn(listTotals(m).length)};
+const hasS=m=>m.svet.some(x=>x.gl>0||x.man>0||x.izv==1);
 function tipHtml(m){
   const l=leadList(m),sw=c=>`<i style="background:${c}"></i>`;
   return `<b>${esc(m.naz)}</b><dl>`+
-    `<dt>Župan</dt><dd>${m.zt?sw(group(m.zup[0].pred).c)+esc(m.zup[0].naz)+" · "+pc(m.zup[0].prc)+"<small>"+esc(m.zup[0].pred||"–")+(m.zup[1]?" · prednost "+(marg(m)*100).toFixed(1).replace(".",",")+"\u00a0o.\u00a0t.":" · brez protikandidata")+"</small>":"ni izidov"}</dd>`+
+    `<dt>Župan</dt><dd>${m.zt?sw(group(m.zup[0].pred).c)+esc(m.zup[0].naz)+" · "+pc(m.zup[0].prc)+"<small>"+esc(m.zup[0].pred||"–")+(m.zup[1]?" · prednost "+(marg(m)*100).toFixed(1).replace(".",",")+"\u00a0o.\u00a0t.":" · brez protikandidata")+"</small>":(solo(m)?sw(group(m.zup[0].pred).c):'')+preZ(m)+(m.zup.length?"<small>"+esc(solo(m)?m.zup[0].pred||'–':short(m.zup.map(c=>c.naz).join(', '),64))+"</small>":'')}</dd>`+
     (m.k2&&m.k2.zt?`<dt>2. krog</dt><dd>${sw(group(m.k2.zup[0].pred).c)+esc(m.k2.zup[0].naz)} · ${pc(m.k2.zup[0].prc)}</dd>`:"")+
-    `<dt>Svet</dt><dd>${l?sw(group(l.naz).c)+esc(short(l.naz,30))+" · "+(m.full?pc(l.prc):glasov(l.gl)):maj(m)?"večinski sistem · izvoljenih "+m.svet.filter(x=>x.izv==1).length:"ni podatkov"}</dd>`+
-    `<dt>Udeležba</dt><dd>${m.glas?pc(m.udel)+" ("+pp(m.udel-(S.natU||0))+")":"–"}</dd></dl>`;
+    `<dt>Svet</dt><dd>${!hasS(m)?preS(m):l?sw(group(l.naz).c)+esc(short(l.naz,30))+" · "+(m.full?pc(l.prc):glasov(l.gl)):maj(m)?"večinski sistem · izvoljenih "+m.svet.filter(x=>x.izv==1).length:"ni podatkov"}</dd>`+
+    (m.glas?`<dt>Udeležba</dt><dd>${pc(m.udel)+" ("+pp(m.udel-(S.natU||0))+")"}</dd>`:'')+`</dl>`;
 }
 if(matchMedia("(hover:hover)").matches){
   const tip=$("#tip");
@@ -945,7 +956,7 @@ document.addEventListener('click',e=>{
   if((x=t.closest('#map path'))){if(Date.now()-(S.noClick||0)<350)return;return pick(x.dataset.k)}
   if(t.id==='open')return $('#term').scrollIntoView({behavior:'smooth',block:'start'});
   if((x=t.closest('[data-m]')))return pick(x.dataset.m,true);
-  if((x=t.closest('[data-mode]'))){S.mode=x.dataset.mode;document.querySelectorAll('[data-mode]').forEach(b=>b.classList.toggle('on',b===x));return render()}
+  if((x=t.closest('[data-mode]'))){S.modeSet=true;S.mode=x.dataset.mode;document.querySelectorAll('[data-mode]').forEach(b=>b.classList.toggle('on',b===x));return render()}
   if((x=t.closest('[data-l]'))){const k=x.dataset.l;S.coal.has(k)?S.coal.delete(k):S.coal.add(k);renderMuni()}
 });
 
