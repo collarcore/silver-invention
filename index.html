@@ -131,12 +131,13 @@ summary{cursor:pointer;color:var(--dim);letter-spacing:.1em}
 textarea::placeholder{color:var(--dim)}
 section[hidden]{display:none}
 [hidden]{display:none!important}
-.col{display:contents}
+.col,.cols{display:contents}
 #sim{order:1}#s-live{order:2}#s-map{order:3}#term{order:4}#s-log{order:5}#s-pre{order:6}#s-mayors{order:7}#s-runoff{order:8}#s-council{order:9}#s-rec{order:10}#s-turn{order:11}details{order:12}footer{order:13}
 @media (min-width:640px){.kpis{grid-template-columns:repeat(4,1fr)}}
 @media (min-width:1100px){
  main{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:0 12px;align-items:start;padding:14px 18px 48px}
- .col{display:flex;flex-direction:column;min-width:0;order:3;position:sticky;align-self:start}
+ .cols{grid-column:1/-1;order:3;display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:0 12px;align-items:start}
+ .col{display:flex;flex-direction:column;min-width:0;position:sticky;align-self:start}
  header,#sim,#s-live,details,footer{grid-column:1/-1}
  .cards{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
 }
@@ -179,6 +180,7 @@ main.flash section>h2::before{animation:none;opacity:1}
 <div id="sim"></div>
 
 <section id="s-live"><h2>LIVE RESULTS <span>// REZULTATI V ŽIVO</span></h2><div class="body" id="live"></div></section>
+<div class="cols">
 <div class="col colL">
 <section id="s-map"><h2>MUNICIPAL GRID <span>// ZEMLJEVID OBČIN</span></h2><div class="body">
   <div class="btns layers" style="margin-top:0">
@@ -200,6 +202,7 @@ main.flash section>h2::before{animation:none;opacity:1}
 </div></section>
 <section id="s-log" hidden><h2>EVENT LOG <span>// ZADNJE SPREMEMBE</span><span id="logn"></span></h2><div class="body"><ul class="log" id="log"></ul></div></section>
 <section id="s-runoff"><h2>RUNOFF WATCH <span>// DRUGI KROG 29. 11.</span></h2><div class="body" id="runoff"></div></section>
+</div>
 </div>
 <details id="tools" hidden><summary id="toolsum">ORODJA // UVOZ PODATKOV</summary>
   <div class="btns" id="clrbox" hidden><button id="bClr">ZAPRI ROČNI VNOS</button></div>
