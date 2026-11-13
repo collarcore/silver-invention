@@ -26,7 +26,12 @@ jobs:
         with:
           node-version: 20
       - run: npm install --no-audit --no-fund
-      - run: '[ "$(date -u +%Y)" = "2026" ] && node scripts/fetch.js ${{ inputs.touch && '--touch' || '' }}'
+      - name: zajem
+        env:
+          TOUCH: ${{ inputs.touch }}
+        run: |
+          [ "$(date -u +%Y)" = "2026" ] || exit 0
+          if [ "$TOUCH" = "true" ]; then node scripts/fetch.js --touch; else node scripts/fetch.js; fi
       - name: objavi
         run: |
           git add data.json 2>/dev/null || exit 0
