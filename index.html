@@ -67,6 +67,7 @@ button{cursor:pointer;letter-spacing:.06em}
 .cb{position:relative;margin-bottom:12px}.cbbtn{width:100%;text-align:left;font-size:15px;padding:10px 34px 10px 12px;letter-spacing:0;background-image:linear-gradient(45deg,transparent 50%,var(--g) 50%),linear-gradient(135deg,var(--g) 50%,transparent 50%);background-position:calc(100% - 18px) 50%,calc(100% - 13px) 50%;background-size:5px 5px;background-repeat:no-repeat}
 .cbpop{position:absolute;left:0;right:0;top:100%;z-index:20;background:var(--panel);border:1px solid var(--g);border-top:0;box-shadow:0 10px 30px rgba(0,0,0,.45)}
 .cbpop input{width:100%;font:inherit;font-size:13px;color:var(--txt);background:var(--inp);border:0;border-bottom:1px solid var(--line);padding:9px 12px;outline:none;caret-color:var(--g);-webkit-user-select:text;user-select:text;cursor:text}
+.cbpop.up{top:auto;bottom:100%;border-top:1px solid var(--g);border-bottom:0;box-shadow:0 -10px 30px rgba(0,0,0,.45)}
 .cblist{max-height:330px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--line) transparent}
 .cblist div{padding:6px 12px;font-size:13px;color:var(--txt);cursor:pointer}.cblist div.cur{color:var(--g)}.cblist div.act,.cblist div:hover{background:color-mix(in srgb,var(--g) 16%,transparent)}.cblist p{margin:0;padding:8px 12px;font-size:12px;color:var(--dim)}
 select{appearance:none;-webkit-appearance:none;padding-right:34px;background-image:linear-gradient(45deg,transparent 50%,var(--g) 50%),linear-gradient(135deg,var(--g) 50%,transparent 50%);background-position:calc(100% - 18px) 50%,calc(100% - 13px) 50%;background-size:5px 5px;background-repeat:no-repeat;text-overflow:ellipsis}
@@ -977,7 +978,7 @@ function enhance(sel){
     const a=list.querySelector('.act');if(a)list.scrollTop=Math.max(0,a.offsetTop-list.clientHeight/2+a.offsetHeight/2)};
   const mark=()=>{list.querySelectorAll('div').forEach((d,i)=>d.classList.toggle('act',i===act));const a=list.querySelector('.act');if(a)a.scrollIntoView({block:'nearest'})};
   const close=()=>{pop.hidden=true;btn.setAttribute('aria-expanded','false')};
-  const open=()=>{document.querySelectorAll('.cbpop').forEach(p=>{if(p!==pop)p.hidden=true});pop.hidden=false;btn.setAttribute('aria-expanded','true');q.value='';q.hidden=sel.options.length<=12;draw();if(!q.hidden)q.focus({preventScroll:true});const r=pop.getBoundingClientRect();if(r.bottom>innerHeight-8)scrollBy({top:Math.min(r.bottom-innerHeight+12,btn.getBoundingClientRect().top-12),behavior:'smooth'})};
+  const open=()=>{document.querySelectorAll('.cbpop').forEach(p=>{if(p!==pop)p.hidden=true});pop.hidden=false;btn.setAttribute('aria-expanded','true');q.value='';q.hidden=sel.options.length<=12;const br=btn.getBoundingClientRect(),head=q.hidden?0:40,below=innerHeight-br.bottom-10,above=br.top-10,want=Math.min(330,sel.options.length*31)+head,up=below<want&&above>below;pop.classList.toggle('up',up);list.style.maxHeight=Math.max(90,Math.min(330,(up?above:below)-head))+'px';draw();if(!q.hidden)q.focus({preventScroll:true})};
   const choose=i=>{const o=items[i];if(!o)return;close();btn.focus();if(sel.value!==o.v){sel.value=o.v;sel.dispatchEvent(new Event('change',{bubbles:true}))}cb._sync()};
   btn.onclick=()=>pop.hidden?open():close();q.oninput=draw;
   cb.onkeydown=e=>{if(pop.hidden){if(e.key==='ArrowDown'&&e.target===btn){open();e.preventDefault()}return}
