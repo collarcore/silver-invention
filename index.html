@@ -442,7 +442,7 @@ function animateChanges(){
   document.querySelectorAll('.row[data-b],.card[data-m]').forEach(el=>{const c=cid(el),key=c.id+'|'+(el.dataset.b||el.dataset.m),pos=[el.offsetLeft-c.offsetLeft,el.offsetTop-c.offsetTop],old=PREV.y.get(key);
     y.set(key,pos);if(!fresh||!el.animate)return;
     if(old&&(old[0]!==pos[0]||old[1]!==pos[1]))el.animate([{transform:`translate(${old[0]-pos[0]}px,${old[1]-pos[1]}px)`},{transform:'none'}],{duration:650,easing:'cubic-bezier(.2,.7,.2,1)',delay:scanDelay(el),fill:'backwards'});
-    else if(!old&&had)el.animate([{opacity:0,transform:'translateY(6px)'},{opacity:1,transform:'none'}],{duration:500,easing:'ease-out',delay:scanDelay(el),fill:'backwards'})});
+    else if(!old&&had)el.animate([{opacity:0,transform:'translateY(6px)'},{opacity:1,transform:'none'}],{duration:320,easing:'ease-out',delay:scanDelay(el),fill:'backwards'})});
   if(fresh){document.querySelectorAll('.log li.new').forEach(li=>{li.style.animationDelay=scanDelay(li)+'ms'});
   }
   PREV.w=w;PREV.v=v;PREV.y=y;
@@ -546,7 +546,7 @@ function render(){
 }
 
 const plur=(n,a,b,c,d)=>{const r=n%100;return n+' '+(r===1?a:r===2?b:r===3||r===4?c:d)},kand=n=>plur(n,'kandidat','kandidata','kandidati','kandidatov'),listn=n=>plur(n,'lista','listi','liste','list');
-const rcard=(id,lab,m,val,det)=>`<button class="card rc" data-b="${id}" data-m="${key(m.naz)}"><span style="letter-spacing:.08em;font-size:10px">${lab}</span><b>${esc(m.naz)} · ${val}</b><span>${det||''}</span></button>`;
+const rcard=(id,lab,m,val,det)=>`<button class="card rc" data-b="${id}" data-m="${key(m.naz)}"><span style="letter-spacing:.08em;font-size:10px">${lab}</span><b>${esc(m.naz)} · <span style="white-space:nowrap">${val}</span></b><span>${det||''}</span></button>`;
 function renderPre(A,rep){
   const C=A.filter(m=>m.zup.length);show('pre',!rep.length&&C.length>0);if(rep.length||!C.length)return;
   const n=C.reduce((a,m)=>a+m.zup.length,0),one=C.filter(m=>m.zup.length===1),P=A.filter(m=>m.full&&m.tip!==1&&m.svet.length),nl=P.reduce((a,m)=>a+listTotals(m).length,0);
