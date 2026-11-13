@@ -6,10 +6,14 @@ on:
         description: 'Preizkus: objavi data.json tudi brez sprememb'
         type: boolean
         default: false
+      minutes:
+        description: 'Preizkus: zanka naj teče toliko minut (0 = samodejno)'
+        default: '0'
   schedule:
-    # ura je v UTC; volišča se zaprejo ob 18:00 UTC
-    - cron: '*/5 17-23 15,29 11 *'
-    - cron: '*/5 0-12 16,30 11 *'
+    # ura je v UTC. Na volilni dan vsako uro: prvi zagon, ki pride na vrsto, ostane v zanki in zajema sam;
+    # naslednji počakajo v vrsti in zanko nadaljujejo, ko se prejšnja izteče.
+    - cron: '7 5-23 15,29 11 *'
+    - cron: '7 0-11 16,30 11 *'
     - cron: '41 */4 * 11 *'
 permissions:
   contents: write
@@ -19,7 +23,7 @@ concurrency:
 jobs:
   zajem:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 350
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -29,14 +33,42 @@ jobs:
       - name: zajem
         env:
           TOUCH: ${{ inputs.touch }}
+          MINUTES: ${{ inputs.minutes }}
         run: |
           [ "$(date -u +%Y)" = "2026" ] || exit 0
-          if [ "$TOUCH" = "true" ]; then node scripts/fetch.js --touch; else node scripts/fetch.js; fi
-      - name: objavi
-        run: |
-          git add data.json 2>/dev/null || exit 0
-          git diff --cached --quiet && exit 0
           git config user.name "lv2026-zajem"
           git config user.email "actions@users.noreply.github.com"
-          git commit -m "zajem $(TZ=Europe/Ljubljana date +'%d.%m. %H:%M')"
-          git push
+          objavi() {
+            git add data.json 2>/dev/null || return 0
+            git diff --cached --quiet && return 0
+            git commit -q -m "zajem $(TZ=Europe/Ljubljana date +'%d.%m. %H:%M')"
+            git pull -q --rebase origin main || { git rebase --abort 2>/dev/null; return 0; }
+            git push -q || true
+          }
+          # okno volilnega večera (UTC): 15. 11. 05:00 - 16. 11. 12:00 in 29. 11. 05:00 - 30. 11. 12:00
+          v_oknu() {
+            d=$(date -u +%m%d); h=$((10#$(date -u +%H)))
+            case "$d" in
+              1115|1129) [ $h -ge 5 ] ;;
+              1116|1130) [ $h -lt 12 ] ;;
+              *) return 1 ;;
+            esac
+          }
+          if [ "$TOUCH" = "true" ]; then node scripts/fetch.js --touch; else node scripts/fetch.js; fi
+          objavi
+          konec=0
+          if [ "${MINUTES:-0}" != "0" ] && [ -n "$MINUTES" ]; then konec=$(( $(date +%s) + MINUTES*60 )); premor=${PREMOR:-120}
+          elif v_oknu; then konec=$(( $(date +%s) + 330*60 )); fi
+          [ $konec -gt 0 ] || exit 0
+          while [ $(date +%s) -lt $konec ]; do
+            if [ "${MINUTES:-0}" = "0" ] || [ -z "$MINUTES" ]; then
+              v_oknu || break
+              # po zaprtju volišč (18:00 UTC na dan volitev) na 6 minut, prej na 15
+              d=$(date -u +%m%d); h=$((10#$(date -u +%H)))
+              if { [ "$d" = "1115" ] || [ "$d" = "1129" ]; } && [ $h -lt 18 ]; then premor=900; else premor=360; fi
+            fi
+            sleep $premor
+            git pull -q --rebase origin main || git rebase --abort 2>/dev/null || true
+            node scripts/fetch.js || true
+            objavi
+          done
