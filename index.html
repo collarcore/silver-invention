@@ -310,7 +310,26 @@ function refreshFeed(first){
   if(S.src!=='feed')return renderStatus();
   const sig=()=>new Map([...S.M].map(([k,m])=>[k,m.zt*7+m.glas*3+m.zup.length+m.svet.length+m.svet.reduce((x,c)=>x+c.gl+c.man,0)]));
   const prev=snap(),s0=sig();applyFeed();const s1=sig(),keys=first?[]:[...s1.keys()].filter(k=>s1.get(k)!==s0.get(k)),ch=keys.length>0;
-  if(ch){logDiff(prev);S.fresh=true}render();if(ch)flash()
+  const ghost=ch?snapshotPage():null;
+  if(ch){logDiff(prev);S.fresh=true}render();if(ch){flash();if(ghost)wipe(ghost)}
+}
+/* new data: the old page stays on screen below the scan line and is wiped away as the line descends */
+function snapshotPage(){
+  try{
+    if(matchMedia('(prefers-reduced-motion:reduce)').matches||!document.body.attachShadow||document.hidden)return null;
+    const m=$('main'),host=document.createElement('div'),sh=host.attachShadow({mode:'open'}),g=m.cloneNode(true);g.classList.remove('flash');
+    sh.appendChild(document.querySelector('style').cloneNode(true));sh.appendChild(g);
+    const so=m.querySelectorAll('select'),sg=g.querySelectorAll('select');so.forEach((x,i)=>{if(sg[i])sg[i].selectedIndex=x.selectedIndex});
+    const c0=m.querySelector('canvas'),c1=g.querySelector('canvas');try{c1.width=c0.width;c1.height=c0.height;c1.getContext('2d').drawImage(c0,0,0)}catch(e){}
+    host.setAttribute('aria-hidden','true');return host;
+  }catch(e){return null}
+}
+function wipe(host){
+  const m=$('main');
+  host.style.cssText='position:absolute;top:0;left:0;right:0;height:'+(m.offsetTop+m.offsetHeight)+'px;overflow:hidden;z-index:2;pointer-events:none;background:var(--bg);clip-path:inset('+Math.round(scrollY)+'px 0 0 0)';
+  document.querySelectorAll('.lvghost').forEach(x=>x.remove());host.className='lvghost';document.body.appendChild(host);
+  const t0=performance.now();(function step(t){const p=(t-t0)/1500;if(p>=1||!host.isConnected){host.remove();return}
+    host.style.clipPath='inset('+Math.round(scrollY+p*(innerHeight+140))+'px 0 0 0)';requestAnimationFrame(step)})(t0);
 }
 const STATIC=!(window.claude&&window.claude.use)&&/^https?:$/.test(location.protocol);let STAT=null;
 const localISO=()=>new Date(Date.now()-new Date().getTimezoneOffset()*6e4).toISOString().slice(0,16);
