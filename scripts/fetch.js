@@ -38,6 +38,7 @@ async function get(id){
   for(let i=0;i<ids.length;i+=4){await Promise.all(ids.slice(i,i+4).map(one));if(!DIR)await new Promise(r=>setTimeout(r,250));if(!DIR&&i===8&&ok===0&&fail>0)break}
   console.log(`prebranih ${ok} · spremenjenih ${chg} · brez datoteke ${miss} · neuspelih prenosov ${fail}`+(get.err?' (zadnja napaka: '+get.err+')':'')+(bad.length?'\nneberljivo: '+bad.join('; '):''));
   if(!ok){console.error('Noben izvoz ni bil prebran; data.json ostaja nespremenjen.');process.exit(1)}
+  if(process.argv.includes('--touch'))chg=chg||1;
   if(chg){out.at=new Date().toISOString();fs.writeFileSync('data.json',JSON.stringify(out));console.log('data.json zapisan, '+Object.keys(out.xl).length+' občin, '+fs.statSync('data.json').size+' B')}
   else console.log('brez sprememb');
   process.exit(0);

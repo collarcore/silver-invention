@@ -1,6 +1,11 @@
 name: zajem
 on:
   workflow_dispatch:
+    inputs:
+      touch:
+        description: 'Preizkus: objavi data.json tudi brez sprememb'
+        type: boolean
+        default: false
   schedule:
     # ura je v UTC; volišča se zaprejo ob 18:00 UTC
     - cron: '*/5 17-23 15,29 11 *'
@@ -21,7 +26,7 @@ jobs:
         with:
           node-version: 20
       - run: npm install --no-audit --no-fund
-      - run: '[ "$(date -u +%Y)" = "2026" ] && node scripts/fetch.js'
+      - run: '[ "$(date -u +%Y)" = "2026" ] && node scripts/fetch.js ${{ inputs.touch && '--touch' || '' }}'
       - name: objavi
         run: |
           git add data.json 2>/dev/null || exit 0
