@@ -1,0 +1,32 @@
+name: zajem
+on:
+  workflow_dispatch:
+  schedule:
+    # ura je v UTC; volišča se zaprejo ob 18:00 UTC
+    - cron: '*/5 17-23 15,29 11 *'
+    - cron: '*/5 0-12 16,30 11 *'
+    - cron: '41 */4 * 11 *'
+permissions:
+  contents: write
+concurrency:
+  group: zajem
+  cancel-in-progress: false
+jobs:
+  zajem:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install --no-audit --no-fund
+      - run: '[ "$(date -u +%Y)" = "2026" ] && node scripts/fetch.js'
+      - name: objavi
+        run: |
+          git add data.json 2>/dev/null || exit 0
+          git diff --cached --quiet && exit 0
+          git config user.name "lv2026-zajem"
+          git config user.email "actions@users.noreply.github.com"
+          git commit -m "zajem $(TZ=Europe/Ljubljana date +'%d.%m. %H:%M')"
+          git push
