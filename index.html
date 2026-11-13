@@ -13,7 +13,7 @@
 :root{--bg:#0d1312;--panel:#131a18;--line:#26332e;--g:#6fcf97;--g2:#3f8f66;--dim:#8a9a92;--txt:#c3cdc7;--hi:#e4eae6;--red:#d9726b;--amb:#d0a24c;--cy:#6db7d6;--pk:90%;--pmix:var(--bg);--ms:var(--bg);--c2:var(--amb);--nd:#26332f;--inp:#111816;--track:#1b2522;--rain:.18}
 html[data-lvtheme=matrix]{--bg:#04070a;--panel:#080d10;--line:#143021;--g:#00ff41;--g2:#12b33a;--dim:#7c9485;--txt:#cfdad3;--hi:#fff;--red:#ff4d4d;--amb:#ffb000;--cy:#3fd0ee;--pk:100%;--nd:#1b2227;--inp:#050a08;--track:#0a1210;--rain:.21}
 html[data-lvtheme=amber]{--bg:#14100a;--panel:#1c160e;--line:#3a2e1c;--g:#e0a84a;--g2:#a8782c;--dim:#9a8b74;--txt:#d6c9b3;--hi:#f1e7d6;--red:#d9726b;--amb:#7fb5c9;--cy:#7fb5c9;--pk:86%;--c2:#e07b4f;--nd:#302618;--inp:#1a150d;--track:#2a2216;--rain:.16}
-html[data-lvtheme=light]{--bg:#f1f4f1;--panel:#fff;--line:#d3dad5;--g:#1f7a4d;--g2:#4fa377;--dim:#5f6e66;--txt:#26302b;--hi:#111815;--red:#b8433b;--amb:#b07a1c;--cy:#1c6c8c;--pk:100%;--pmix:#000;--ms:#fff;--nd:#dde3df;--inp:#fff;--track:#e6ebe7;--rain:.27}
+html[data-lvtheme=light]{--bg:#f1f4f1;--panel:#fff;--line:#d3dad5;--g:#1f7a4d;--g2:#4fa377;--dim:#5f6e66;--txt:#26302b;--hi:#111815;--red:#b8433b;--amb:#8f6210;--cy:#1c6c8c;--pk:100%;--pmix:#000;--ms:#fff;--nd:#dde3df;--inp:#fff;--track:#e6ebe7;--rain:.27}
 *{box-sizing:border-box}
 body{-webkit-user-select:none;user-select:none;caret-color:transparent;cursor:default;-webkit-tap-highlight-color:transparent}
 textarea{font-variant-ligatures:none;-webkit-user-select:text;user-select:text;caret-color:auto;cursor:text}
@@ -56,12 +56,15 @@ section>h2 span{color:var(--dim);font-weight:400;letter-spacing:.06em}
 .dots i{width:11px;height:11px;border-radius:3px}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:8px}
 .card{border:1px solid var(--line);padding:8px 10px;font-size:11px;cursor:pointer;background:none;color:var(--txt);text-align:left;font:inherit;font-size:11px;width:100%}
+.card.rc{display:flex;flex-direction:column;justify-content:flex-start;gap:2px}
 .card b{display:block;letter-spacing:.05em;font-size:12px;color:var(--hi)}
 .card span{color:var(--dim)}
 .card.amb{border-color:color-mix(in srgb,var(--amb) 45%,var(--line))}.card.up{border-color:color-mix(in srgb,var(--g) 45%,var(--line))}.card.dn{border-color:color-mix(in srgb,var(--red) 45%,var(--line))}
 .pos{color:var(--g)!important}.neg{color:var(--red)!important}.amb-t{color:var(--amb)!important}
 button,select,textarea,input[type=file]{font:inherit;color:var(--g);background:var(--inp);border:1px solid var(--line);padding:8px 10px;border-radius:0}
 button{cursor:pointer;letter-spacing:.06em}
+select{appearance:none;-webkit-appearance:none;padding-right:34px;background-image:linear-gradient(45deg,transparent 50%,var(--g) 50%),linear-gradient(135deg,var(--g) 50%,transparent 50%);background-position:calc(100% - 18px) 50%,calc(100% - 13px) 50%;background-size:5px 5px;background-repeat:no-repeat;text-overflow:ellipsis}
+option{background:var(--panel);color:var(--txt)}
 button:disabled{opacity:.4;cursor:default}
 button:focus-visible,select:focus-visible,.card:focus-visible{border-color:var(--g);outline:none}
 @media (hover:hover){button:hover,.filebtn:hover{border-color:var(--g)}}
@@ -120,7 +123,7 @@ details.sec>summary span{color:var(--dim);font-weight:400;letter-spacing:.04em}
 details{border:1px solid var(--line);background:var(--panel);padding:9px 12px;margin-bottom:12px;font-size:11px}
 summary{cursor:pointer;color:var(--dim);letter-spacing:.1em}
 #msg{font-size:11px;color:var(--amb);min-height:16px}
-#theme{width:auto;margin:2px 0 0;padding:3px 6px;font-size:12px}
+.themes{display:inline-flex;flex-wrap:wrap;gap:4px;margin:2px 0 0}.themes button{padding:3px 7px;font-size:11px;letter-spacing:.02em}
 .filebtn{color:var(--g);background:var(--inp);border:1px solid var(--line);padding:8px 10px;cursor:pointer;letter-spacing:.06em}
 .layers button{font-size:11px;padding:6px 9px}
 .kpis.k3{grid-template-columns:repeat(3,1fr)}
@@ -141,14 +144,13 @@ footer{color:var(--dim);font-size:10px;letter-spacing:.06em}
 @keyframes cur{50%{opacity:0}}
 @keyframes dot{50%{opacity:.3}}
 @keyframes selp{50%{stroke-width:3.6}}
-@keyframes fl{0%{border-color:var(--g);box-shadow:0 0 0 1px var(--g),0 0 22px color-mix(in srgb,var(--g) 55%,transparent),inset 0 0 26px color-mix(in srgb,var(--g) 16%,transparent)}18%{border-color:var(--line);box-shadow:0 0 0 0 transparent}36%{border-color:var(--g);box-shadow:0 0 0 1px var(--g),0 0 16px color-mix(in srgb,var(--g) 45%,transparent),inset 0 0 20px color-mix(in srgb,var(--g) 12%,transparent)}}
+@keyframes fl{0%{border-color:var(--g);box-shadow:0 0 0 0 color-mix(in srgb,var(--g) 55%,transparent)}45%{border-color:color-mix(in srgb,var(--g) 55%,var(--line))}100%{border-color:var(--line);box-shadow:0 0 26px 12px transparent}}
 .led.on{animation:pulse 1.8s ease-out infinite}
 h1::after{content:"";display:inline-block;width:.55em;height:.74em;margin-left:.4em;background:currentColor;vertical-align:baseline;animation:cur 1.1s steps(2) infinite}
 section>h2::before{display:inline-block;animation:dot 3.2s ease-in-out infinite}
 section:nth-of-type(2n)>h2::before{animation-delay:1.1s}section:nth-of-type(3n)>h2::before{animation-delay:2s}
 #map path.sel{animation:selp 1.8s ease-in-out infinite}
-main.flash section,main.flash header,main.flash>details{animation:fl 1.8s ease-out}
-main.flash section>h2::before{animation:none;opacity:1}
+main.flash section,main.flash header,main.flash>details{animation:fl 2.6s cubic-bezier(.2,.6,.3,1)}
 @keyframes lin{0%{opacity:0;transform:translateY(-8px)}}
 .log{list-style:none;margin:0;padding:0 6px 0 0;font-size:12px;max-height:264px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--line) transparent}
 .log li{display:grid;grid-template-columns:38px 86px 1fr;gap:8px;align-items:baseline;padding:4px 0;border-bottom:1px solid var(--line);cursor:pointer}
@@ -167,7 +169,7 @@ main.flash section>h2::before{animation:none;opacity:1}
 <header>
   <canvas id="rain"></canvas>
   <h1>LV2026 // RESULTS TRACKER</h1><div class="sub">LOKALNE VOLITVE · 15. 11. 2026 · 212 OBČIN</div>
-  <dl class="status"><dt>ZAJEM</dt><dd><i class="led" id="led"></i><span id="link">povezujem …</span></dd><dt>VOLIŠČA</dt><dd id="clock"></dd><dt>TEMA</dt><dd><select id="theme" aria-label="Barvna tema" autocomplete="off"><option value="matrix">matrix</option><option value="calm">umirjena</option><option value="amber">jantar</option><option value="light">svetla</option></select></dd></dl>
+  <dl class="status"><dt>ZAJEM</dt><dd><i class="led" id="led"></i><span id="link">povezujem …</span></dd><dt>VOLIŠČA</dt><dd id="clock"></dd><dt>TEMA</dt><dd><span class="themes" id="themes" role="group" aria-label="Barvna tema"><button data-th="matrix">matrix</button><button data-th="calm">umirjena</button><button data-th="amber">jantar</button><button data-th="light">svetla</button></span></dd></dl>
 </header>
 <div id="sim"></div>
 
@@ -370,7 +372,7 @@ function loadText(t,label){
     render();say('Naloženo ('+(label||'vnos')+'), '+'občine: '+n+'. Samodejni zajem je začasno izklopljen.');$('#paste').value='';
   }catch(e){say('Napaka: '+e.message)}
 }
-const flash=()=>{const m=$('main');m.classList.remove('flash');void m.offsetWidth;m.classList.add('flash');clearTimeout(flash.t);flash.t=setTimeout(()=>m.classList.remove('flash'),1900)};
+const flash=()=>{const m=$('main');m.classList.remove('flash');void m.offsetWidth;m.classList.add('flash');clearTimeout(flash.t);flash.t=setTimeout(()=>m.classList.remove('flash'),2700)};
 const glasov=n=>{const r=n%100;return fmt(n)+" "+(r===1?"glas":r===2?"glasova":r===3||r===4?"glasovi":"glasov")};
 const LOG=[];
 const snap=()=>new Map([...S.M].map(([k,m])=>[k,{zt:m.zt,l:m.zt?m.zup[0].naz:'',maj:m.zt>0&&m.zup[0].prc>.5}]));
@@ -506,7 +508,7 @@ function render(){
 }
 
 const plur=(n,a,b,c,d)=>{const r=n%100;return n+' '+(r===1?a:r===2?b:r===3||r===4?c:d)},kand=n=>plur(n,'kandidat','kandidata','kandidati','kandidatov'),listn=n=>plur(n,'lista','listi','liste','list');
-const rcard=(id,lab,m,val,det)=>`<button class="card" data-b="${id}" data-m="${key(m.naz)}"><span style="letter-spacing:.08em;font-size:10px">${lab}</span><b>${esc(m.naz)} · ${val}</b><span>${det||''}</span></button>`;
+const rcard=(id,lab,m,val,det)=>`<button class="card rc" data-b="${id}" data-m="${key(m.naz)}"><span style="letter-spacing:.08em;font-size:10px">${lab}</span><b>${esc(m.naz)} · ${val}</b><span>${det||''}</span></button>`;
 function renderPre(A,rep){
   const C=A.filter(m=>m.zup.length);show('pre',!rep.length&&C.length>0);if(rep.length||!C.length)return;
   const n=C.reduce((a,m)=>a+m.zup.length,0),one=C.filter(m=>m.zup.length===1),P=A.filter(m=>m.full&&m.tip!==1&&m.svet.length),nl=P.reduce((a,m)=>a+listTotals(m).length,0);
@@ -566,7 +568,7 @@ function renderMap(tur){
   });
   const mix=(c,p)=>`color-mix(in srgb,var(${c}) ${p}%,var(--nd))`;
   const ramp=(c0,c1)=>`<i class="ramp" style="background:linear-gradient(90deg,${c0},${c1})"></i>`,sw=(c,t)=>`<span><i style="background:${c}"></i>${t}</span>`;
-  const nd=sw('var(--nd)','ni podatkov'),cats=()=>P.map(([k,[v,c]])=>sw(c,esc(k)+' · '+v)).join('')+nd;
+  const nd=sw('var(--nd)',S.mode==='pred'||S.mode==='zup'||S.mode==='raz'?'še brez izida':'ni podatkov'),cats=()=>P.map(([k,[v,c]])=>sw(c,esc(k)+' · '+v)).join('')+nd;
   $('#legend').innerHTML=S.mode==='udel'?(us.length?`<span>${pc(lo)}${ramp(mix('--g',25),'var(--g)')}${pc(hi)}</span>`:'')+nd
     :S.mode==='odst'?`<span>−15\u00a0o.\u00a0t.${ramp('var(--red)','var(--nd) 50%,var(--g)')}+15\u00a0o.\u00a0t. od državne udeležbe</span>`+nd
     :S.mode==='raz'?`<span>tesno${ramp('var(--c2)',mix('--c2',25))}40+\u00a0o.\u00a0t. prednosti</span>`+nd
@@ -655,7 +657,7 @@ function candHtml(m,L){
     for(const ve of cve){const c=g.c.filter(r=>(r[4]||1)===ve),n=official||noProj?0:seatOf(lk,ve);c.forEach((r,i)=>{if(official?r[3]===1:i<n)el.add(r)})}
     const elLine=multi?cve.map(ve=>{const e=g.c.filter(r=>(r[4]||1)===ve&&el.has(r));return e.length?'<span style="color:var(--dim)">VE '+ve+':</span> '+e.map(nm).join(', '):''}).filter(Boolean).join(' &nbsp; '):g.c.filter(r=>el.has(r)).map(nm).join(', ');
     const full=multi?cve.map(ve=>{const c=g.c.filter(r=>(r[4]||1)===ve);return c.length?`<div style="font-size:11px;color:var(--dim);margin-top:6px">VE ${ve}</div><ol>${c.map(r=>`<li class="${el.has(r)?'el':''}">${esc(r[0])}${r[2]?' <small>· '+fmt(r[2])+' pref.</small>':''}</li>`).join('')}</ol>`:''}).join(''):`<ol>${g.c.map(r=>`<li class="${el.has(r)?'el':''}">${esc(r[0])}${r[2]?' <small>· '+fmt(r[2])+' pref.</small>':''}</li>`).join('')}</ol>`;
-    h+=`<div class="cl"><div class="clh"><span><i style="background:${group(g.naz).c}"></i>${esc(g.naz)}</span><span>${el.size?(official?'izvoljenih: ':'predvidenih: ')+el.size:(l&&l.man?'mandati:\u00a0'+l.man:'')}</span></div>`+
+    h+=`<div class="cl"><div class="clh"><span><i style="background:${colorOf(g.naz)}"></i>${esc(g.naz)}</span><span>${el.size?(official?'izvoljenih: ':'predvidenih: ')+el.size:(l&&l.man?'mandati:\u00a0'+l.man:'')}</span></div>`+
       (el.size?`<div class="cle">${elLine}</div>`:'')+`<details data-o="c:${k}:${lk}"${isOpen('c:'+k+':'+lk,false)?' open':''}><summary>vsi kandidati (${g.c.length})</summary>${full}</details></div>`;
   }
   return h+'</details>';
@@ -992,9 +994,9 @@ document.addEventListener('click',e=>{
 })();
 
 /* ---- theme ---- */
-function setTheme(t){document.documentElement.dataset.lvtheme=t;$('#theme').value=t;try{localStorage.setItem('lv2026-theme',t)}catch(e){}}
-$('#theme').onchange=e=>setTheme(e.target.value);
-const syncTheme=()=>{const t=document.documentElement.dataset.lvtheme;if(t&&$('#theme').value!==t)$('#theme').value=t};
+function setTheme(t){document.documentElement.dataset.lvtheme=t;document.querySelectorAll('#themes button').forEach(b=>{b.classList.toggle('on',b.dataset.th===t);b.setAttribute('aria-pressed',b.dataset.th===t)});try{localStorage.setItem('lv2026-theme',t)}catch(e){}}
+$('#themes').onclick=e=>{const b=e.target.closest('button');if(b)setTheme(b.dataset.th)};
+const syncTheme=()=>{const t=document.documentElement.dataset.lvtheme,o=document.querySelector('#themes button.on');if(t&&(!o||o.dataset.th!==t))setTheme(t)};
 addEventListener('pageshow',syncTheme);setTimeout(syncTheme,300);setTimeout(syncTheme,1500);
 (()=>{let t='matrix';try{t=localStorage.getItem('lv2026-theme')||t}catch(e){}if(!['calm','matrix','amber','light'].includes(t))t='matrix';setTheme(t)})();
 
