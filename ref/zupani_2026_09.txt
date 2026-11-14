@@ -1,0 +1,212 @@
+AJDOVŠČINA|Tadej Beočanin
+ANKARAN|Gregor Strmčnik
+APAČE|Andrej Steyer
+BELTINCI|Marko Virag
+BENEDIKT|Milan Repič
+BISTRICA OB SOTLI|Franjo Debelak
+BLED|Anton Mežan
+BLOKE|Jože Doles
+BOHINJ|Jože Sodja
+BOROVNICA|Peter Črnilogar
+BOVEC|Valter Mlekuž
+BRASLOVČE|Tomaž Žohar
+BRDA|Franc Mužič
+BREZOVICA|Metod Ropret
+BREŽICE|Ivan Molan
+CANKOVA|Danilo Kacijan
+CELJE|Matija Kovač
+CERKLJE NA GORENJSKEM|Franc Čebulj
+CERKNICA|Marko Rupar
+CERKNO|Gašper Uršič
+CERKVENJAK|Marjan Žmavc
+CIRKULANE|Antonija Žumbar
+ČRENŠOVCI|Vera Markoja
+ČRNA NA KOROŠKEM|Romana Lesjak
+ČRNOMELJ|Andrej Kavšek
+DESTRNIK|Vlasta Tetičkovič-Toplak
+DIVAČA|Alenka Štrucl Dovgan
+DOBJE|Franc Leskovšek
+DOBREPOLJE|Janez Pavlin
+DOBRNA|Martin Brecl
+DOBROVA-POLHOV GRADEC|Jure Dolinar
+DOBROVNIK|Marjan Kardinar
+DOL PRI LJUBLJANI|Željko Savič
+DOLENJSKE TOPLICE|Franc Vovk
+DOMŽALE|Renata Kosec
+DORNAVA|Milan Šilak
+DRAVOGRAD|Anton Preksavec
+DUPLEK|Mitja Horvat
+GORENJA VAS-POLJANE|Milan Čadež
+GORIŠNICA|Borut Kolar
+GORJE|Peter Torkar
+GORNJA RADGONA|Urška Mauko Tuš
+GORNJI GRAD|Anton Špeh
+GORNJI PETROVCI|Milan Horvat
+GRAD|Cvetka Ficko
+GROSUPLJE|Peter Verlič
+HAJDINA|Stanislav Glažar
+HOČE-SLIVNICA|Marko Soršak
+HODOŠ|Denis Tamaško
+HORJUL|Janko Prebil
+HRASTNIK|Marko Funkl
+HRPELJE KOZINA|Saša Likavec Svetelšek
+IDRIJA|Tomaž Vencelj
+IG|Zlatko Usenik
+ILIRSKA BISTRICA|Gregor Kovačič
+IVANČNA GORICA|Dušan Strnad
+IZOLA|Milan Bogatič
+JESENICE|Peter Bohinec
+JEZERSKO|Andrej Karničar
+JURŠINCI|Robert Horvat
+KAMNIK|Matej Slapar
+KANAL|Miha Stegel
+KIDRIČEVO|Anton Leskovar
+KOBARID|Marko Matajurc
+KOBILJE|Darko Horvat
+KOČEVJE|Gregor Košir
+KOMEN|Erik Modic
+KOMENDA|Jurij Kern
+KOPER|Aleš Bržan
+KOSTANJEVICA NA KRKI|Robert Zagorc
+KOSTEL|Nataša Turk
+KOZJE|Milenca Krajnc
+KRANJ|Matjaž Rakovec
+KRANJSKA GORA|Henrika Zupan
+KRIŽEVCI|Branko Slavinec
+KRŠKO|Janez Kerin
+KUNGOTA|Tamara Šnofl
+KUZMA|Jožef Škalič
+LAŠKO|Marko Šantej
+LENART|Janez Kramberger
+LENDAVA|Janez Magyar
+LITIJA|Franc Rokavec
+LJUBLJANA|Zoran Janković
+LJUBNO|Franjo Naraločnik
+LJUTOMER|Olga Karba
+LOG-DRAGOMER|Miran Stanovnik
+LOGATEC|Berto Menard
+LOŠKA DOLINA|Matjaž Antončič
+LOŠKI POTOK|Simon Debeljak
+LOVRENC NA POHORJU|Marko Rakovnik
+LUČE|Klavdij Strmčnik
+LUKOVICA|Olga Vrankar
+MAJŠPERK|Sašo Kodrič
+MAKOLE|Franc Majcen
+MARIBOR|Aleksander Saša Arsenovič
+MARKOVCI|Milan Gabrovec
+MEDVODE|Nejc Smole
+MENGEŠ|Bogo Ropotar
+METLIKA|Martina Legan Janžekovič
+MEŽICA|Mark Maze
+MIKLAVŽ NA DRAVSKEM POLJU|Egon Repnik
+MIREN-KOSTANJEVICA|Mauricij Humar
+MIRNA|Dušan Skerbiš
+MIRNA PEČ|Andrej Kastelic
+MISLINJA|Bojan Borovnik
+MOKRONOG-TREBELNO|Franc Glušič
+MORAVČE|Janez Vidic
+MORAVSKE TOPLICE|Alojz Glavač
+MOZIRJE|Ivan Suhoveršnik
+MURSKA SOBOTA|Damjan Anželj
+MUTA|Angelca (Angela) Mrak
+NAKLO|Primož Povše
+NAZARJE|Matej Pečovnik
+NOVA GORICA|Samo Turel
+NOVO MESTO|Gregor Macedoni
+ODRANCI|Barbara Ferenčak
+OPLOTNICA|Matjaž Orter
+ORMOŽ|Danijel Vrbnjak
+OSILNICA|Alenka Kovač
+PESNICA|Gregor Žmak
+PIRAN|Andrej Korenika
+PIVKA|Robert Smrdelj
+PODČETRTEK|Peter Misja
+PODLEHNIK|Sebastian Toplak
+PODVELKA|Miran Pušnik
+POLJČANE|Petra Vrhovnik
+POLZELA|Jože Kužnik
+POSTOJNA|Igor Marentič
+PREBOLD|Marko Repnik
+PREDDVOR|Rok Roblek
+PREVALJE|Matija Tasič
+PTUJ|Nuška Gajšek
+PUCONCI|Uroš Kamenšek
+RAČE-FRAM|Samo Rajšp
+RADEČE|Tomaž Režun
+RADENCI|Roman Leljak
+RADLJE OB DRAVI|Alan Bukovnik
+RADOVLJICA|Ciril Globočnik
+RAVNE NA KOROŠKEM|Tomaž Rožen
+RAZKRIŽJE|Stanko Ivanušič
+REČICA OB SAVINJI|Majda Potočnik
+RENČE-VOGRSKO|Tarik Žigon
+RIBNICA|Samo Pogorelc
+RIBNICA NA POHORJU|Srečko Geč
+ROGAŠKA SLATINA|Branko Kidrič
+ROGAŠOVCI|Rihard Peurača
+ROGATEC|Brigita Vodušek
+RUŠE|Urška Repolusk
+SELNICA OB DRAVI|Vlasta Krmelj
+SEMIČ|Polona Kambič
+SEVNICA|Janez Kukec
+SEŽANA|Andrej Sila
+SLOVENJ GRADEC|Tilen Klugler
+SLOVENSKA BISTRICA|Ivan Žagar
+SLOVENSKE KONJICE|Primož Poklič
+SODRAŽICA|Blaž Milavec
+SOLČAVA|Katarina Prelesnik
+SREDIŠČE OB DRAVI|Toni Jelovica
+STARŠE|Stanislav Greifoner
+STRAŽA|Dušan Krštinc
+SVETA ANA|Martin Breznik
+SVETA TROJICA V SLOVENSKIH GORICAH|David Klobasa
+SVETI ANDRAŽ V SLOV. GORICAH|Darja Vudler Berlak
+SVETI JURIJ OB ŠČAVNICI|Andrej Vrzel
+SVETI JURIJ V SLOV. GORICAH|Peter Škrlec
+SVETI TOMAŽ|Mirko Cvetko
+ŠALOVCI|Iztok Fartek
+ŠEMPETER-VRTOJBA|Milan Turk
+ŠENČUR|Ciril Kozjek
+ŠENTILJ|Štefan Žvab
+ŠENTJERNEJ|Jože Simončič
+ŠENTJUR|Marko Diaci
+ŠENTRUPERT|Tomaž Ramovš
+ŠKOCJAN|Jože Kapler
+ŠKOFJA LOKA|Tine Radinja
+ŠKOFLJICA|Primož Cimerman
+ŠMARJE PRI JELŠAH|Matija Čakš
+ŠMARJEŠKE TOPLICE|Marjan Hribar
+ŠMARTNO OB PAKI|Janko Kopušar
+ŠMARTNO PRI LITIJI|Blaž Izlakar
+ŠOŠTANJ|Boris Goličnik
+ŠTORE|Miran Jurkošek
+TABOR|Marko Semprimožnik
+TIŠINA|Franc Horvat
+TOLMIN|Alen Červ
+TRBOVLJE|Zoran Poznič
+TREBNJE|Mateja Povhe
+TRNOVSKA VAS|Alojz Benko
+TRZIN|Peter Ložar
+TRŽIČ|Peter Miklič
+TURNIŠČE|Borut Horvat
+VELENJE|Peter Dermol
+VELIKA POLANA|Damijan Jaklin
+VELIKE LAŠČE|Matjaž Hočevar
+VERŽEJ|Drago Legen
+VIDEM|Brane Kolednik
+VIPAVA|Anton Lavrenčič
+VITANJE|Andraž Pogorevc
+VODICE|Aco Franc Šuštar
+VOJNIK|Branko Petre
+VRANSKO|Nataša Juhart
+VRHNIKA|Daniel Cukjati
+VUZENICA|Franjo (Franc) Golob
+ZAGORJE OB SAVI|Matjaž Švagan
+ZAVRČ|Slavko Pravdič
+ZREČE|Boris Podvršnik
+ŽALEC|Janko Kos
+ŽELEZNIKI|Marko Gasser
+ŽETALE|Matjaž Kopše
+ŽIRI|Franc Kranjc
+ŽIROVNICA|Leopold Pogačar
+ŽUŽEMBERK|Jože Papež
