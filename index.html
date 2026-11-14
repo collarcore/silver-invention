@@ -166,6 +166,8 @@ section:nth-of-type(2n)>h2::before{animation-delay:1.1s}section:nth-of-type(3n)>
 .log li{display:grid;grid-template-columns:38px 86px 1fr;gap:8px;align-items:baseline;padding:4px 0;border-bottom:1px solid var(--line);cursor:pointer}
 .log li:last-child{border:0}.log li.new{animation:lin .5s ease-out backwards}
 .log time{color:var(--dim)}.log b{color:var(--hi);font-weight:700}.log span{color:var(--dim)}
+.inc{display:inline-block;font-style:normal;font-size:10px;line-height:1;letter-spacing:.08em;color:var(--g);box-shadow:inset 0 0 0 1px var(--g);padding:4px 5px 2px;margin-left:8px;white-space:nowrap;vertical-align:2px}
+.incs{color:var(--g)!important}
 .solo{display:inline-block;font-style:normal;font-size:10px;line-height:1;letter-spacing:.08em;color:var(--bg);background:var(--g);padding:4px 5px 2px;margin-left:8px;white-space:nowrap;vertical-align:2px}
 .tag{font-size:10px;letter-spacing:.06em;white-space:nowrap}
 .t-new{color:var(--dim)}.t-lead{color:var(--amb)}.t-maj{color:var(--g)}.t-drop{color:var(--red)}
@@ -345,6 +347,7 @@ const localISO=()=>new Date(Date.now()-new Date().getTimezoneOffset()*6e4).toISO
 async function loadStatic(t){
   const go=async()=>{
     try{const r=await fetch('data.json',{cache:'no-cache'});if(!r.ok)throw 0;const j=await r.json();if(!j||!j.xl)throw 0;clearTimeout(t);
+      if(!INC&&!loadStatic.inc){loadStatic.inc=1;fetch('inc.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).then(x=>{if(x&&x.m){INC=x;render()}}).catch(()=>{})}
       if(STAT&&STAT.at===j.at)return;const first=!STAT;STAT=j;S.xl=new Map(Object.entries(j.xl));CAND.clear();SUB.clear();S.link='on';refreshFeed(first);
     }catch(e){if(!STAT){clearTimeout(t);setLink('slow')}}
   };
@@ -465,7 +468,15 @@ function bar(label,sub,val,max,color,text,mark){
   return `<div class="row" data-b="${esc(label+"|"+(sub||""))}"><div class="rh"><span class="lb">${esc(label)}${sub?`<small>${esc(sub)}</small>`:''}</span><span class="vl">${text}</span></div><div class="tr"><i style="width:${max?Math.min(100,val/max*100):0}%;background:${color}"></i>${mark!=null?`<u style="left:${mark}%"></u>`:''}</div></div>`;
 }
 const SOLO='<em class="solo">BREZ PROTIKANDIDATA</em>';
-const nrow=(label,sub,color,solo)=>`<div class="nrow"><i style="background:${color}"></i><span>${esc(label)}${solo?SOLO:''}${sub?`<small>${esc(sub)}</small>`:''}</span></div>`;
+/* who holds office now: mayors as of 9/2026 (STA), council and community members elected in 2022 (DVK archive) */
+let INC=null;const INCM=new Map();
+const TIT=/\b(mag|dr|prof|doc|spec|univ|dipl|inz|ing|msc|mba|izr|red)\b\.?/g;
+const ntok=n=>String(n||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(TIT,' ').split(/[^a-z]+/).filter(Boolean);
+const sameName=(A,B)=>{if(A.length<2||B.length<2)return false;const [x,y]=A.length<=B.length?[A,B]:[B,A];return x.every(t=>y.includes(t))};
+const incIn=(id,list,name)=>{if(!list||!list.length)return false;const ck=id+'|'+name;let v=INCM.get(ck);if(v===undefined){let L=INCM.get(id);if(!L){L=list.map(ntok);INCM.set(id,L)}const t=ntok(name);v=L.some(x=>sameName(x,t));INCM.set(ck,v)}return v};
+const isM=(k,n)=>!!(INC&&INC.m[k])&&incIn('m:'+k,[INC.m[k]],n),isS=(k,n)=>!!(INC&&INC.s[k])&&incIn('s:'+k,INC.s[k],n),isU=(k,u,n)=>!!(INC&&INC.u[k]&&INC.u[k][key(u)])&&incIn('u:'+k+':'+key(u),INC.u[k][key(u)],n);
+const TM='<em class="inc">NA POLOŽAJU</em>',TS='<em class="inc">MANDAT 2022–26</em>',TL=' <small class="incs">· mandat 2022–26</small>';
+const nrow=(label,sub,color,solo,tag)=>`<div class="nrow"><i style="background:${color}"></i><span>${esc(label)}${tag||''}${solo?SOLO:''}${sub?`<small>${esc(sub)}</small>`:''}</span></div>`;
 const solo=m=>!m.zt&&m.zup.length===1;
 const soloVE=C=>{const n={};C.forEach(c=>n[c.ve]=(n[c.ve]||0)+1);return c=>n[c.ve]===1};
 const empty=t=>`<div class="empty">${t||'Čakam na prve izide.'}</div>`;
@@ -517,6 +528,7 @@ function render(){
      </div>
      <h3>VODILNI KANDIDATI PO PREDLAGATELJU</h3>
      ${top.map(([k,[v,c]])=>bar(k,'',v,mx,c,v)).join('')}
+     ${INC?(()=>{const R=lead.filter(x=>x.m.zup.some(c=>isM(key(x.m.naz),c.naz))),w=R.filter(x=>isM(key(x.m.naz),x.a.naz)).length;return R.length?'<h3>SEDANJI ŽUPANI</h3>'+bar('Vodi','',w,R.length,'var(--g)',w+' · '+pc(w/R.length))+bar('Zaostaja','',R.length-w,R.length,'var(--red)',(R.length-w)+' · '+pc((R.length-w)/R.length)):''})():''}
      <h3>STRANKE : NEODVISNI</h3>
      ${(()=>{const p=lead.filter(x=>group(x.a.pred).l!=='NEODVISNI IN LOKALNE LISTE').length,n=lead.length-p;return bar('S podporo državne stranke','',p,lead.length,'var(--g)',p+' · '+pc(p/lead.length))+bar('Neodvisni in lokalne liste','',n,lead.length,tint('#9aa3a0'),n+' · '+pc(n/lead.length))})()}`;
   }
@@ -560,6 +572,7 @@ function renderPre(A,rep){
     <div class="kpi"><b class="amb-t">${one.length}</b><small>občin z enim kandidatom</small></div>
     <div class="kpi"><b>${nl?fmt(nl):'–'}</b><small>list za svete${nl?' v '+P.length+' obč.':''}</small></div>
    </div>
+   ${INC?(()=>{const r=C.filter(m=>m.zup.some(c=>isM(key(m.naz),c.naz))).length,t=Object.keys(INC.m).length;return '<h3>SEDANJI ŽUPANI</h3>'+bar('Kandidira znova','',r,t,'var(--g)',r+' · '+pc(r/t))+bar('Ne kandidira','',t-r,t,tint('#9aa3a0'),(t-r)+' · '+pc((t-r)/t))})():''}
    <h3>KANDIDATI ZA ŽUPANA PO PREDLAGATELJU</h3>${top.map(([k,[v,c]])=>bar(k,'',v,mx,c,v)).join('')}
    <h3>NAJVEČ KANDIDATOV</h3><div class="cards c2">${big.map((m,i)=>rcard('big'+i,'ŽUPANSKA TEKMA',m,kand(m.zup.length),'')).join('')}${bl.map((m,i)=>rcard('bl'+i,'OBČINSKI SVET',m,listn(listTotals(m).length),'')).join('')}</div>
    ${one.length?`<details class="sec" data-o="pre1"${isOpen('pre1',innerWidth>=640)?' open':''}><summary>EN SAM KANDIDAT <span>· ${one.length}</span></summary><p class="note">Tu je župan znan že pred volitvami, če dobi večino veljavnih glasov.</p><div class="cards">${one.slice(0,12).map((m,i)=>rcard('one'+i,'BREZ PROTIKANDIDATA',m,esc(m.zup[0].naz),esc(m.zup[0].pred||''))).join('')}</div>${one.length>12?'<p class="note" style="margin:8px 0 0">in še '+esc(one.slice(12).map(m=>m.naz).join(', '))+'.</p>':''}</details>`:''}`;
@@ -632,19 +645,19 @@ function renderMuni(){
     <div class="kpi"><b>${m.upr?fmt(m.upr):'–'}</b><small>upravičencev</small></div>
     <div class="kpi"><b>${m.tip===2?'proporc.':m.tip===1?'večinski':'–'}</b><small>sistem za svet</small></div></div>`;
   h+=`<h3>ŽUPAN</h3>`;
-  h+=m.zt?m.zup.map(c=>bar(c.naz,c.pred,c.prc,1,group(c.pred).c,pc(c.prc)+' · '+fmt(c.gl),50)).join('')+`<p class="note" style="margin-top:10px">${m.zup[0].prc>.5?'Vodilni je trenutno nad 50 %.':'Nihče nad 50 % — kaže na drugi krog.'} Rdeča črta označuje 50 %.</p>`
-    :m.zup.length?`<p class="note">${solo(m)?'En sam kandidat: izvoljen bo, če prejme večino veljavnih glasov, torej praktično zagotovo.':'Kandidati ('+m.zup.length+'); izidov še ni.'}</p>`+m.zup.map(c=>nrow(c.naz,c.pred,group(c.pred).c,solo(m))).join(''):empty('Ni izidov.');
+  h+=m.zt?m.zup.map(c=>bar(c.naz,(c.pred||'')+(isM(key(m.naz),c.naz)?' · na položaju':''),c.prc,1,group(c.pred).c,pc(c.prc)+' · '+fmt(c.gl),50)).join('')+`<p class="note" style="margin-top:10px">${m.zup[0].prc>.5?'Vodilni je trenutno nad 50 %.':'Nihče nad 50 % — kaže na drugi krog.'} Rdeča črta označuje 50 %.</p>`
+    :m.zup.length?`<p class="note">${solo(m)?'En sam kandidat: izvoljen bo, če prejme večino veljavnih glasov, torej praktično zagotovo.':'Kandidati ('+m.zup.length+'); izidov še ni.'}</p>`+m.zup.map(c=>nrow(c.naz,c.pred,group(c.pred).c,solo(m),isM(key(m.naz),c.naz)?TM:'')).join(''):empty('Ni izidov.');
   if(m.k2)h+=`<h3>ŽUPAN — DRUGI KROG</h3>`+(m.k2.zt?m.k2.zup.map(c=>bar(c.naz,c.pred,c.prc,1,group(c.pred).c,pc(c.prc)+' · '+fmt(c.gl),50)).join('')+(m.k2.upr?`<p class="note" style="margin-top:10px">Udeležba v drugem krogu: ${pc(m.k2.glas/m.k2.upr)}.</p>`:''):empty('Čakam na izide drugega kroga.'));
   h+=`<h3>OBČINSKI SVET</h3>`;
   const L=listTotals(m),seats=L.reduce((a,l)=>a+l.man,0);
   const anyV=m.svet.some(x=>x.gl>0||x.man>0||x.izv==1);
   if(!m.svet.length)h+=empty('Ni podatkov o svetu.');
   else if(!anyV){
-    if(maj(m)){const C=[...m.svet].sort((a,b)=>a.ve-b.ve);const so=soloVE(C),ns=C.filter(so).length;h+=`<p class="note">Večinski sistem, kandidati (${C.length}) po volilnih enotah; izidov še ni.${ns?' Brez protikandidata v svoji volilni enoti: '+ns+'.':''}</p>`+C.map(c=>nrow(c.naz,'VE '+c.ve+(c.pred?' · '+c.pred:''),group(c.pred).c,so(c))).join('')}
+    if(maj(m)){const C=[...m.svet].sort((a,b)=>a.ve-b.ve);const so=soloVE(C),ns=C.filter(so).length;h+=`<p class="note">Večinski sistem, kandidati (${C.length}) po volilnih enotah; izidov še ni.${ns?' Brez protikandidata v svoji volilni enoti: '+ns+'.':''}</p>`+C.map(c=>nrow(c.naz,'VE '+c.ve+(c.pred?' · '+c.pred:''),group(c.pred).c,so(c),isS(key(m.naz),c.naz)?TS:'')).join('')}
     else h+=`<p class="note">Liste (${L.length}); izidov še ni.</p>`+L.map(l=>nrow(l.naz,'',colorOf(l.naz))).join('');
   }else if(m.tip===1&&!seats){
     const C=[...m.svet].sort((a,b)=>String(a.ve).localeCompare(String(b.ve),'sl',{numeric:true})||b.gl-a.gl),mx=Math.max(...C.map(c=>c.gl),1);
-    h+=C.map(c=>bar(c.naz,`VE ${c.ve??'–'}${c.pred?' · '+c.pred:''}`,c.gl,mx,c.izv==1?'var(--g)':'var(--dim)',fmt(c.gl)+(c.izv==1?' · izvoljen(a)':''))).join('');
+    h+=C.map(c=>bar(c.naz,`VE ${c.ve??'–'}${c.pred?' · '+c.pred:''}${isS(key(m.naz),c.naz)?' · mandat 2022–26':''}`,c.gl,mx,c.izv==1?'var(--g)':'var(--dim)',fmt(c.gl)+(c.izv==1?' · izvoljen(a)':''))).join('');
   }else{
     const mx=Math.max(...L.map(l=>l.prc),.01);
     h+=L.map(l=>bar(l.naz,'',l.prc,mx,colorOf(l.naz),(m.full?pc(l.prc):glasov(l.gl))+(l.man?' · mandati:\u00a0'+l.man:''))).join('');
@@ -697,7 +710,7 @@ function candHtml(m,L){
     const g=by.get(lk),l=seats.get(lk),el=new Set();
     for(const ve of cve){const c=g.c.filter(r=>(r[4]||1)===ve),n=official||noProj?0:seatOf(lk,ve);c.forEach((r,i)=>{if(official?r[3]===1:i<n)el.add(r)})}
     const elLine=multi?cve.map(ve=>{const e=g.c.filter(r=>(r[4]||1)===ve&&el.has(r));return e.length?'<span style="color:var(--dim)">VE '+ve+':</span> '+e.map(nm).join(', '):''}).filter(Boolean).join(' &nbsp; '):g.c.filter(r=>el.has(r)).map(nm).join(', ');
-    const full=multi?cve.map(ve=>{const c=g.c.filter(r=>(r[4]||1)===ve);return c.length?`<div style="font-size:11px;color:var(--dim);margin-top:6px">VE ${ve}</div><ol>${c.map(r=>`<li class="${el.has(r)?'el':''}">${esc(r[0])}${r[2]?' <small>· '+fmt(r[2])+' pref.</small>':''}</li>`).join('')}</ol>`:''}).join(''):`<ol>${g.c.map(r=>`<li class="${el.has(r)?'el':''}">${esc(r[0])}${r[2]?' <small>· '+fmt(r[2])+' pref.</small>':''}</li>`).join('')}</ol>`;
+    const full=multi?cve.map(ve=>{const c=g.c.filter(r=>(r[4]||1)===ve);return c.length?`<div style="font-size:11px;color:var(--dim);margin-top:6px">VE ${ve}</div><ol>${c.map(r=>`<li class="${el.has(r)?'el':''}">${esc(r[0])}${isS(k,r[0])?TL:''}${r[2]?' <small>· '+fmt(r[2])+' pref.</small>':''}</li>`).join('')}</ol>`:''}).join(''):`<ol>${g.c.map(r=>`<li class="${el.has(r)?'el':''}">${esc(r[0])}${isS(k,r[0])?TL:''}${r[2]?' <small>· '+fmt(r[2])+' pref.</small>':''}</li>`).join('')}</ol>`;
     h+=`<div class="cl"><div class="clh"><span><i style="background:${colorOf(g.naz)}"></i>${esc(g.naz)}</span><span>${el.size?(official?'izvoljenih: ':'predvidenih: ')+el.size:(l&&l.man?'mandati:\u00a0'+l.man:'')}</span></div>`+
       (el.size?`<div class="cle">${elLine}</div>`:'')+`<details data-o="c:${k}:${lk}"${isOpen('c:'+k+':'+lk,false)?' open':''}><summary>vsi kandidati (${g.c.length})</summary>${full}</details></div>`;
   }
@@ -817,7 +830,7 @@ function subHtml(m){
 }
 function subUnitHtml(k,u,i){
   let h='';
-  const li=(c,el)=>`<li class="${el?'el':''}">${esc(c.naz)}${c.pref?' <small>· '+fmt(c.pref)+' pref.</small>':''}</li>`;
+  const li=(c,el)=>`<li class="${el?'el':''}">${esc(c.naz)}${isU(k,u.naz,c.naz)?TL:''}${c.pref?' <small>· '+fmt(c.pref)+' pref.</small>':''}</li>`;
   if(u.tip===2){
     const tot=u.S.reduce((a,l)=>a+l.gl,0),L=tot?[...u.S].sort((a,b)=>b.gl-a.gl):u.S,mx=Math.max(...L.map(l=>l.gl),1);
     h+=tot||u.S.some(l=>l.man)?L.map(l=>bar(l.naz,'',l.gl,tot?mx:0,group(l.naz).c,tot?pc(l.gl/tot)+(l.man?' · mandati:\u00a0'+l.man:''):(l.man?'mandati:\u00a0'+l.man:''))).join(''):`<p class="note">Liste (${L.length}); izidov še ni.</p>`;
@@ -832,7 +845,7 @@ function subUnitHtml(k,u,i){
   }else{
     const any=u.V.some(c=>c.gl>0),multi=new Set(u.V.map(c=>c.ve)).size>1;
     const C=any?[...u.V].sort((a,b)=>a.ve-b.ve||b.gl-a.gl):u.V,mx=Math.max(...C.map(c=>c.gl),1);
-    h+=any||C.some(c=>c.izv===1)?C.map(c=>bar(c.naz,(multi?'VE '+c.ve+' · ':'')+c.pred,c.gl,any?mx:0,c.izv===1?'var(--g)':'var(--dim)',any?fmt(c.gl)+(c.izv===1?' · izvoljen(a)':''):(c.izv===1?'izvoljen(a)':''))).join(''):(so=>`<p class="note">Kandidati (${C.length}); izidov še ni.</p>`+C.map(c=>nrow(c.naz,(multi?'VE '+c.ve+' · ':'')+c.pred,group(c.pred).c,so(c))).join(''))(soloVE(C));
+    h+=any||C.some(c=>c.izv===1)?C.map(c=>bar(c.naz,(multi?'VE '+c.ve+' · ':'')+c.pred+(isU(k,u.naz,c.naz)?' · mandat 2022–26':''),c.gl,any?mx:0,c.izv===1?'var(--g)':'var(--dim)',any?fmt(c.gl)+(c.izv===1?' · izvoljen(a)':''):(c.izv===1?'izvoljen(a)':''))).join(''):(so=>`<p class="note">Kandidati (${C.length}); izidov še ni.</p>`+C.map(c=>nrow(c.naz,(multi?'VE '+c.ve+' · ':'')+c.pred,group(c.pred).c,so(c),isU(k,u.naz,c.naz)?TS:'')).join(''))(soloVE(C));
   }
   return h;
 }
@@ -998,7 +1011,7 @@ const hasS=m=>m.svet.some(x=>x.gl>0||x.man>0||x.izv==1);
 function tipHtml(m){
   const l=leadList(m),sw=c=>`<i style="background:${c}"></i>`;
   return `<b>${esc(m.naz)}</b><dl>`+
-    `<dt>Župan</dt><dd>${m.zt?sw(group(m.zup[0].pred).c)+esc(m.zup[0].naz)+" · "+pc(m.zup[0].prc)+"<small>"+esc(m.zup[0].pred||"–")+(m.zup[1]?" · prednost "+(marg(m)*100).toFixed(1).replace(".",",")+"\u00a0o.\u00a0t.":" · brez protikandidata")+"</small>":(solo(m)?sw(group(m.zup[0].pred).c):'')+preZ(m)+(m.zup.length?"<small>"+esc(solo(m)?m.zup[0].pred||'–':short(m.zup.map(c=>c.naz).join(', '),64))+"</small>":'')}</dd>`+
+    `<dt>Župan</dt><dd>${m.zt?sw(group(m.zup[0].pred).c)+esc(m.zup[0].naz)+" · "+pc(m.zup[0].prc)+"<small>"+esc(m.zup[0].pred||"–")+(m.zup[1]?" · prednost "+(marg(m)*100).toFixed(1).replace(".",",")+"\u00a0o.\u00a0t.":" · brez protikandidata")+"</small>":(solo(m)?sw(group(m.zup[0].pred).c):'')+preZ(m)+(m.zup.length?"<small>"+esc(solo(m)?m.zup[0].pred||'–':short(m.zup.map(c=>c.naz+(isM(key(m.naz),c.naz)?' (na položaju)':'')).join(', '),80))+"</small>":'')}</dd>`+
     (m.k2&&m.k2.zt?`<dt>2. krog</dt><dd>${sw(group(m.k2.zup[0].pred).c)+esc(m.k2.zup[0].naz)} · ${pc(m.k2.zup[0].prc)}</dd>`:"")+
     `<dt>Svet</dt><dd>${!hasS(m)?preS(m):l?sw(group(l.naz).c)+esc(short(l.naz,30))+" · "+(m.full?pc(l.prc):glasov(l.gl)):maj(m)?"večinski sistem · izvoljenih "+m.svet.filter(x=>x.izv==1).length:"ni podatkov"}</dd>`+
     (m.glas?`<dt>Udeležba</dt><dd>${pc(m.udel)+" ("+pp(m.udel-(S.natU||0))+")"}</dd>`:'')+`</dl>`;

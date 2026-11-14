@@ -4,7 +4,7 @@
 const fs=require('fs');
 const strip=s=>String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/đ/gi,'d').toLowerCase();
 const key=s=>strip(s).replace(/[^a-z0-9]/g,'');
-const cur=JSON.parse(fs.readFileSync('data.json','utf8')),old=JSON.parse(fs.readFileSync('ref/2022.json','utf8'));
+const cur=JSON.parse(fs.readFileSync('data.json','utf8')),old=JSON.parse(fs.readFileSync('ref/2022_k1.json','utf8'));
 const keys=Object.keys(cur.xl),names={};keys.forEach(k=>names[k]=cur.xl[k].rows.split('\n')[0].split('|')[1]);
 const ALIAS={kanal:'kanalobsoci',ljubno:'ljubnoobsavinji',svetijurij:'svetijurijobscavnici'};
 const find=n=>{let k=key(n);if(cur.xl[k])return k;if(ALIAS[k]&&cur.xl[ALIAS[k]])return ALIAS[k];
