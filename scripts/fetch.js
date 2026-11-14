@@ -7,10 +7,10 @@ const BASE=arg('--base')||'https://volitve.dvk-rs.si/lv2026/data/obcine-xlsx/izv
 const UA='lv2026-tracker (+https://github.com/collarcore/silver-invention)';
 const di=process.argv.indexOf('--dir'),DIR=di>0?process.argv[di+1]:null;
 const now=()=>new Date().toLocaleString('sv-SE',{timeZone:'Europe/Ljubljana'}).slice(0,16).replace(' ','T');
-async function get(id){
+async function get(id,base){
   if(DIR){const f=fs.readdirSync(DIR).find(n=>new RegExp('izvoz_'+id+'[^0-9]*\\.xlsx$','i').test(n));return f?fs.readFileSync(path.join(DIR,f)):null}
   for(let a=0;a<2;a++){
-    try{const r=await fetch(BASE+id+'.xlsx',{headers:{'user-agent':UA},signal:AbortSignal.timeout(20000)});
+    try{const r=await fetch((base||BASE)+id+'.xlsx',{headers:{'user-agent':UA},signal:AbortSignal.timeout(20000)});
       if(r.status===404)return null;if(!r.ok)throw new Error('HTTP '+r.status);
       const b=Buffer.from(await r.arrayBuffer());if(b[0]!==0x50||b[1]!==0x4b)throw new Error('not xlsx');return b}
     catch(e){get.err=e.message;await new Promise(r=>setTimeout(r,1500))}
@@ -23,13 +23,22 @@ async function get(id){
   if(!dom.window.XLSX)throw new Error('XLSX ni naložen');
   const w=dom.window,parse=w.eval('parseExport'),candPack=w.eval('candPack');
   let old={xl:{},cand:{},sub:{},code:{}};try{old=JSON.parse(fs.readFileSync(OUT,'utf8'))}catch(e){}
-  const out={lv2026:2,at:old.at||'',xl:{...old.xl},cand:{...old.cand},sub:{...old.sub},code:{...old.code}};
+  const out={lv2026:2,at:old.at||'',xl:{...old.xl},cand:{...old.cand},sub:{...old.sub},code:{...old.code},k2:{...(old.k2||{})}};
   const ids=Array.from({length:215},(_,i)=>String(i+1).padStart(3,'0'));let ok=0,miss=0,fail=0,chg=0;const bad=[],at=now();
   const one=async id=>{
     const b=await get(id);if(b===null){miss++;return}if(b===undefined){fail++;return}
     try{
       const u=new w.Uint8Array(b.length);u.set(b);const {k,rows,res,sub}=parse(u.buffer);ok++;
       const same=(a,r)=>a&&a.rows===r;let c=out.code[k]!==id;out.code[k]=id;
+      /* runoff: after the first round DVK's export for a runoff municipality carries only the two mayoral candidates.
+         Never let such a record replace one that has council rows; keep it separately as the second round. */
+      const hasC=r=>r.split('\n').some(l=>l[0]==='S'||l[0]==='V'),prev=out.xl[k];
+      if(prev&&hasC(prev.rows)&&!hasC(res.rows)){
+        if(res.rows.split('\n').filter(l=>l[0]==='Z').length===2&&(!same(out.k2[k],res.rows)||out.k2[k].ts!==res.ts)){out.k2[k]={rows:res.rows,ts:res.ts,at};c=true}
+        if(!DIR){const b1=await get(id,BASE.replace('obcine-xlsx/','prvikrog/obcine-xlsx/'));if(b1){try{const u1=new w.Uint8Array(b1.length);u1.set(b1);const p1=parse(u1.buffer);
+          if(p1.k===k&&hasC(p1.res.rows)&&(!same(out.xl[k],p1.res.rows)||out.xl[k].ts!==p1.res.ts)){out.xl[k]={rows:p1.res.rows,ts:p1.res.ts,at};c=true}}catch(e){}}}
+        if(c)chg++;return;
+      }
       if(!same(out.xl[k],res.rows)||out.xl[k].ts!==res.ts){out.xl[k]={rows:res.rows,ts:res.ts,at};c=true}
       if(sub&&!same(out.sub[k],sub)){out.sub[k]={rows:sub,at};c=true}
       if(rows.length){const p=candPack(rows);if(!same(out.cand[k],p)){out.cand[k]={rows:p,at};c=true}}
