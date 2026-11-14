@@ -2,7 +2,8 @@
    Usage: node scripts/fetch.js            (download from DVK)
           node scripts/fetch.js --dir DIR  (read izvoz_NNN.xlsx from a folder, for testing) */
 const {JSDOM}=require('jsdom'),fs=require('fs'),path=require('path');
-const BASE='https://volitve.dvk-rs.si/lv2026/data/obcine-xlsx/izvoz_';
+const arg=n=>{const i=process.argv.indexOf(n);return i>0?process.argv[i+1]:null};
+const BASE=arg('--base')||'https://volitve.dvk-rs.si/lv2026/data/obcine-xlsx/izvoz_',OUT=arg('--out')||'data.json';
 const UA='lv2026-tracker (+https://github.com/collarcore/silver-invention)';
 const di=process.argv.indexOf('--dir'),DIR=di>0?process.argv[di+1]:null;
 const now=()=>new Date().toLocaleString('sv-SE',{timeZone:'Europe/Ljubljana'}).slice(0,16).replace(' ','T');
@@ -21,7 +22,7 @@ async function get(id){
     beforeParse(w){w.matchMedia=()=>({matches:true});w.Element.prototype.scrollIntoView=()=>{};w.eval(fs.readFileSync(require.resolve('xlsx/dist/xlsx.mini.min.js'),'utf8'))}});
   if(!dom.window.XLSX)throw new Error('XLSX ni naložen');
   const w=dom.window,parse=w.eval('parseExport'),candPack=w.eval('candPack');
-  let old={xl:{},cand:{},sub:{},code:{}};try{old=JSON.parse(fs.readFileSync('data.json','utf8'))}catch(e){}
+  let old={xl:{},cand:{},sub:{},code:{}};try{old=JSON.parse(fs.readFileSync(OUT,'utf8'))}catch(e){}
   const out={lv2026:2,at:old.at||'',xl:{...old.xl},cand:{...old.cand},sub:{...old.sub},code:{...old.code}};
   const ids=Array.from({length:215},(_,i)=>String(i+1).padStart(3,'0'));let ok=0,miss=0,fail=0,chg=0;const bad=[],at=now();
   const one=async id=>{
@@ -39,7 +40,7 @@ async function get(id){
   console.log(`prebranih ${ok} · spremenjenih ${chg} · brez datoteke ${miss} · neuspelih prenosov ${fail}`+(get.err?' (zadnja napaka: '+get.err+')':'')+(bad.length?'\nneberljivo: '+bad.join('; '):''));
   if(!ok){console.error('Noben izvoz ni bil prebran; data.json ostaja nespremenjen.');process.exit(1)}
   if(process.argv.includes('--touch'))chg=chg||1;
-  if(chg){out.at=new Date().toISOString();fs.writeFileSync('data.json',JSON.stringify(out));console.log('data.json zapisan, '+Object.keys(out.xl).length+' občin, '+fs.statSync('data.json').size+' B')}
+  if(chg){out.at=new Date().toISOString();fs.writeFileSync(OUT,JSON.stringify(out));console.log('data.json zapisan, '+Object.keys(out.xl).length+' občin, '+fs.statSync(OUT).size+' B')}
   else console.log('brez sprememb');
   process.exit(0);
 })();

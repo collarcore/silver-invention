@@ -2,15 +2,27 @@ name: probe
 on:
   workflow_dispatch:
 permissions:
-  contents: read
+  contents: write
 jobs:
   probe:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 15
     steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install --no-audit --no-fund
       - run: |
           UA='lv2026-tracker (+https://github.com/collarcore/silver-invention)'
-          for u in arhivi/volitve2022/lv2022/config/config.json arhivi/volitve2022/lv2022/data/ostale_obcine.csv arhivi/volitve2022/lv2022/data/mestne_obcine.csv arhivi/volitve2022/lv2022/data/obcine-xlsx/izvoz_061.xlsx arhivi/volitve2022/lv2022/data/obcine-data/ljubljana.json arhivi/volitve2022/lv2022/data/obcine-press/obcina_ljubljana.csv arhivi/volitve2022/lv2022/data/data.json; do
-            code=$(curl -s -A "$UA" -o /tmp/f -w '%{http_code} %{size_download} %{content_type}' "https://www.dvk-rs.si/$u"); echo "== $u -> $code"; head -c 1500 /tmp/f | tr -c '[:print:]\n' '.' ; echo
-          done
-          curl -s -A "$UA" "https://volitve.dvk-rs.si/lv2026/config/config.json"
+          B=https://www.dvk-rs.si/arhivi/volitve2022/lv2022/data
+          mkdir -p ref
+          for id in 061 043 203 001; do curl -s -A "$UA" -o ref/2022_izvoz_$id.xlsx "$B/obcine-xlsx/izvoz_$id.xlsx"; done
+          curl -s -A "$UA" -o ref/2022_ostale_obcine.csv "$B/ostale_obcine.csv"
+          curl -s -A "$UA" -o ref/2022_mestne_obcine.csv "$B/mestne_obcine.csv"
+          curl -s -A "$UA" -o ref/2022_drugi_krog.csv "$B/drugi_krog.csv"
+          ls -la ref
+          node scripts/fetch.js --base "$B/obcine-xlsx/izvoz_" --out ref/2022.json || true
+          git config user.name "lv2026-zajem"
+          git config user.email "actions@users.noreply.github.com"
+          git add ref && git commit -q -m "ref: 2022 archive sample" && git pull -q --rebase origin main && git push -q
