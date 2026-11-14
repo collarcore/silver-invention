@@ -166,9 +166,9 @@ section:nth-of-type(2n)>h2::before{animation-delay:1.1s}section:nth-of-type(3n)>
 .log li{display:grid;grid-template-columns:38px 86px 1fr;gap:8px;align-items:baseline;padding:4px 0;border-bottom:1px solid var(--line);cursor:pointer}
 .log li:last-child{border:0}.log li.new{animation:lin .5s ease-out backwards}
 .log time{color:var(--dim)}.log b{color:var(--hi);font-weight:700}.log span{color:var(--dim)}
-.inc{display:inline-block;font-style:normal;font-size:9px;line-height:1;letter-spacing:.08em;color:var(--g);box-shadow:inset 0 0 0 1px var(--g);padding:3px 5px 2px;margin-left:8px;white-space:nowrap;vertical-align:2px}
+.inc{font-style:normal;font-size:10px;letter-spacing:.08em;color:var(--g);margin-left:8px;white-space:nowrap}
 .incs{color:var(--g)!important}
-.solo{display:inline-block;font-style:normal;font-size:9px;line-height:1;letter-spacing:.08em;color:var(--bg);background:var(--g);padding:3px 5px 2px;margin-left:8px;white-space:nowrap;vertical-align:2px}
+.solo{font-style:normal;font-size:10px;letter-spacing:.08em;color:var(--amb);margin-left:8px;white-space:nowrap}
 .tag{font-size:10px;letter-spacing:.06em;white-space:nowrap}
 .t-new{color:var(--dim)}.t-lead{color:var(--amb)}.t-maj{color:var(--g)}.t-drop{color:var(--red)}
 #logn{color:var(--dim);font-weight:400;letter-spacing:.06em}
@@ -470,7 +470,7 @@ function listTotals(m){
 function bar(label,sub,val,max,color,text,mark){
   return `<div class="row" data-b="${esc(label+"|"+(sub||""))}"><div class="rh"><span class="lb">${esc(label)}${sub?`<small>${esc(sub)}</small>`:''}</span><span class="vl">${text}</span></div><div class="tr"><i style="width:${max?Math.min(100,val/max*100):0}%;background:${color}"></i>${mark!=null?`<u style="left:${mark}%"></u>`:''}</div></div>`;
 }
-const SOLO='<em class="solo">BREZ PROTIKANDIDATA</em>';
+const SOLO='<em class="solo">[BREZ PROTIKANDIDATA]</em>';
 /* who holds office now: mayors as of 9/2026 (STA), council and community members elected in 2022 (DVK archive) */
 let INC=null;const INCM=new Map();
 const TIT=/\b(mag|dr|prof|doc|spec|univ|dipl|inz|ing|msc|mba|izr|red)\b\.?/g;
@@ -478,7 +478,7 @@ const ntok=n=>String(n||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u03
 const sameName=(A,B)=>{if(A.length<2||B.length<2)return false;const [x,y]=A.length<=B.length?[A,B]:[B,A];return x.every(t=>y.includes(t))};
 const incIn=(id,list,name)=>{if(!list||!list.length)return false;const ck=id+'|'+name;let v=INCM.get(ck);if(v===undefined){let L=INCM.get(id);if(!L){L=list.map(ntok);INCM.set(id,L)}const t=ntok(name);v=L.some(x=>sameName(x,t));INCM.set(ck,v)}return v};
 const isM=(k,n)=>!!(INC&&INC.m[k])&&incIn('m:'+k,[INC.m[k]],n),isS=(k,n)=>!!(INC&&INC.s[k])&&incIn('s:'+k,INC.s[k],n),isU=(k,u,n)=>!!(INC&&INC.u[k]&&INC.u[k][key(u)])&&incIn('u:'+k+':'+key(u),INC.u[k][key(u)],n);
-const TM='<em class="inc">NA POLOŽAJU</em>',TS='<em class="inc">MANDAT 2022–26</em>',TL=' <small class="incs">· mandat 2022–26</small>';
+const TM='<em class="inc">[NA POLOŽAJU]</em>',TS='<em class="inc">[MANDAT 2022–26]</em>',TL=' <small class="incs">· mandat 2022–26</small>';
 const nrow=(label,sub,color,solo,tag)=>`<div class="nrow"><i style="background:${color}"></i><span>${esc(label)}${tag||''}${solo?SOLO:''}${sub?`<small>${esc(sub)}</small>`:''}</span></div>`;
 const solo=m=>!m.zt&&m.zup.length===1;
 const soloVE=C=>{const n={};C.forEach(c=>n[c.ve]=(n[c.ve]||0)+1);return c=>n[c.ve]===1};
