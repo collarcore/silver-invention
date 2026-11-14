@@ -1,0 +1,16 @@
+name: probe
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - run: |
+          UA='lv2026-tracker (+https://github.com/collarcore/silver-invention)'
+          for u in lv2022/data/obcine-xlsx/izvoz_061.xlsx lv2022/data/mestne_obcine.csv lv2022/data/ostale_obcine.csv lv2022/data/mestne_obcine.json lv2022/data/drugi_krog.csv lv2022/data/data.json lv2022/config/config.json lv2022/ lv2026/data/mestne_obcine.json lv2026/config/config.json; do
+            code=$(curl -s -A "$UA" -o /tmp/f -w '%{http_code} %{size_download} %{content_type}' "https://volitve.dvk-rs.si/$u"); echo "== $u -> $code"; head -c 600 /tmp/f | tr -c '[:print:]\n' '.' ; echo
+          done
+          curl -s -A "$UA" "https://volitve.dvk-rs.si/lv2022/" | grep -o 'src="[^"]*"\|href="[^"]*\.\(js\|json\|csv\)[^"]*"' | head -20
