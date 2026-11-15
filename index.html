@@ -318,7 +318,7 @@ function applyFeed(){
 }
 function refreshFeed(first){
   if(S.src!=='feed')return renderStatus();
-  const sig=()=>new Map([...S.M].map(([k,m])=>[k,m.zt*7+m.glas*3+m.zup.length+m.svet.length+m.svet.reduce((x,c)=>x+c.gl+c.man,0)+(m.k2?m.k2.zt*13+m.k2.glas*5+m.k2.zup.length:0)]));
+  const sig=()=>new Map([...S.M].map(([k,m])=>[k,[m.glas,m.odd,m.upr,m.zup.map(c=>c.gl).join(','),m.svet.map(c=>c.gl+':'+c.man+':'+(c.izv||0)).join(','),m.k2?m.k2.glas+'/'+m.k2.zup.map(c=>c.gl).join(','):''].join('|')]));
   const prev=snap(),s0=sig();applyFeed();const s1=sig(),keys=first?[]:[...s1.keys()].filter(k=>s1.get(k)!==s0.get(k)),ch=keys.length>0;
   const ghost=ch?snapshotPage():null;
   if(ch){logDiff(prev);S.fresh=true}render();if(ch){flash();if(ghost)wipe(ghost)}
