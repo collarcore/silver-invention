@@ -321,7 +321,7 @@ function refreshFeed(first){
   const sig=()=>new Map([...S.M].map(([k,m])=>[k,[m.glas,m.odd,m.upr,m.zup.map(c=>c.gl).join(','),m.svet.map(c=>c.gl+':'+c.man+':'+(c.izv||0)).join(','),m.k2?m.k2.glas+'/'+m.k2.zup.map(c=>c.gl).join(','):''].join('|')]));
   const prev=snap(),s0=sig();applyFeed();const s1=sig(),keys=first?[]:[...s1.keys()].filter(k=>s1.get(k)!==s0.get(k)),ch=keys.length>0;
   const ghost=ch?snapshotPage():null;
-  if(ch){logDiff(prev);S.fresh=true}render();if(ch){flash();if(ghost)wipe(ghost)}
+  if(ch){logDiff(prev);S.fresh=true}render();if(ch){flash();if(ghost)wipe(ghost);else if(!document.hidden)scanOnly()}
 }
 /* new data: the old page stays on screen below the scan line and is wiped away as the line descends */
 function snapshotPage(){
@@ -334,6 +334,12 @@ function snapshotPage(){
     const c0=m.querySelector('canvas'),c1=g.querySelector('canvas');try{c1.width=c0.width;c1.height=c0.height;c1.getContext('2d').drawImage(c0,0,0)}catch(e){}
     host.setAttribute('aria-hidden','true');return host;
   }catch(e){return null}
+}
+/* fallback when the old page cannot be copied: the line still runs, without the wipe */
+function scanOnly(){
+  if(matchMedia('(prefers-reduced-motion:reduce)').matches)return;
+  document.querySelectorAll('.lvghost').forEach(x=>x.remove());const line=document.createElement('div');line.className='lvscan lvghost';line.style.transform='translateY(-140px)';document.body.appendChild(line);
+  let t0=0;requestAnimationFrame(function step(t){if(!line.isConnected)return;if(!t0)t0=t;const p=(t-t0)/SCAN;if(p>=1){line.remove();return}line.style.transform='translateY('+(p*(innerHeight+140)-140)+'px)';requestAnimationFrame(step)});
 }
 function wipe(host){
   const m=$('main'),line=document.createElement('div'),inn=host._in;line.className='lvscan lvghost';line.style.transform='translateY(-140px)';
