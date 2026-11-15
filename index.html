@@ -135,6 +135,7 @@ summary{cursor:pointer;color:var(--dim);letter-spacing:.1em}
 .filebtn{color:var(--g);background:var(--inp);border:1px solid var(--line);padding:8px 10px;cursor:pointer;letter-spacing:.06em}
 .layers button{font-size:11px;padding:6px 9px}
 .kpis.k3{grid-template-columns:repeat(3,1fr)}
+@media (min-width:640px){.kpis.k5{grid-template-columns:repeat(5,1fr)}}
 textarea::placeholder{color:var(--dim)}
 section[hidden]{display:none}
 [hidden]{display:none!important}
@@ -263,7 +264,7 @@ const colorOf=s=>{const k=String(s).toUpperCase().trim(),p=partyColor(k);if(p)re
 const LS='lv2026-manual';
 
 /* state: 212 municipalities always present (names from the map), data overlaid */
-const blank=naz=>({naz,tip:0,upr:0,glas:0,udel:0,zup:[],zt:0,svet:[],full:false,k2:null});
+const blank=naz=>({naz,tip:0,upr:0,glas:0,odd:0,udel:0,zup:[],zt:0,svet:[],full:false,k2:null});
 const rankZ=z=>{z.sort((a,b)=>b.gl-a.gl);const t=z.reduce((a,c)=>a+c.gl,0);z.forEach(c=>c.prc=t?c.gl/t:0);return t};
 const S={src:'feed',datum:null,updated:null,nat:null,M:new Map(),xl:new Map(),open:new Map(),coal:new Set(),cur:key('Ljubljana'),mode:'pred',link:'wait',feed:[]};
 function reset(){S.M=new Map(GEO.p.map(([n])=>[key(n),blank(n)]));S.datum=S.updated=S.nat=null}
@@ -280,7 +281,7 @@ function parseRows(text,full){
   const out=[];let m=null;
   for(const line of String(text||'').split('\n')){
     const f=line.split('|').map(x=>x.trim());
-    if(f[0]==='O'){m=blank(f[1]);m.tip=int(f[2]);m.upr=int(f[3]);m.glas=int(f[4]);m.full=!!full;out.push(m)}
+    if(f[0]==='O'){m=blank(f[1]);m.tip=int(f[2]);m.upr=int(f[3]);m.glas=int(f[4]);m.odd=int(f[5]);m.full=!!full;out.push(m)}
     else if(f[0]==='Z'&&m)m.zup.push({naz:f[1],pred:f[2]||'',gl:int(f[3])});
     else if(f[0]==='S'&&m)m.svet.push({ve:int(f[4])||1,naz:f[1],pred:'',gl:int(f[2]),man:int(f[3])});
     else if(f[0]==='V'&&m)m.svet.push({ve:int(f[1])||1,naz:f[2],pred:f[3]||'',gl:int(f[4]),man:0,izv:int(f[5])});
@@ -467,8 +468,10 @@ function listTotals(m){
   const a=[...t.values()].sort((x,y)=>y.gl-x.gl),tot=a.reduce((x,y)=>x+y.gl,0);
   a.forEach(x=>x.prc=tot?x.gl/tot:0);return a;
 }
+const preP=m=>m.glas&&m.odd?Math.min(1,m.odd/m.glas):0;
+const hlInc=t=>t.replace(/ · (na položaju|mandat 2022–26)/g,' <span class="incs">· $1</span>');
 function bar(label,sub,val,max,color,text,mark){
-  return `<div class="row" data-b="${esc(label+"|"+(sub||""))}"><div class="rh"><span class="lb">${esc(label)}${sub?`<small>${esc(sub)}</small>`:''}</span><span class="vl">${text}</span></div><div class="tr"><i style="width:${max?Math.min(100,val/max*100):0}%;background:${color}"></i>${mark!=null?`<u style="left:${mark}%"></u>`:''}</div></div>`;
+  return `<div class="row" data-b="${esc(label+"|"+(sub||""))}"><div class="rh"><span class="lb">${esc(label)}${sub?`<small>${hlInc(esc(sub))}</small>`:''}</span><span class="vl">${text}</span></div><div class="tr"><i style="width:${max?Math.min(100,val/max*100):0}%;background:${color}"></i>${mark!=null?`<u style="left:${mark}%"></u>`:''}</div></div>`;
 }
 const SOLO=' <em class="solo">[BREZ PROTIKANDIDATA]</em>';
 /* who holds office now: mayors as of 9/2026 (STA), council and community members elected in 2022 (DVK archive) */
@@ -507,9 +510,10 @@ function render(){
   const natU=nat.upr?nat.glas/nat.upr:0;
 
   $('#live').innerHTML=`
-   <div class="kpis">
+   <div class="kpis k5">
     <div class="kpi"><b>${nat.glas?K(nat.glas,'int'):'–'}</b><small>glasovalo${nat.upr?' od '+fmt(nat.upr):''}</small></div>
     <div class="kpi"><b>${nat.glas?K(natU,'pct'):'–'}</b><small>udeležba</small></div>
+    <div class="kpi"><b>${(()=>{const T=tur.filter(m=>m.odd),g=T.reduce((a,m)=>a+m.glas,0),o=T.reduce((a,m)=>a+m.odd,0);return g?K(Math.min(1,o/g),'pct'):'–'})()}</b><small>preštetih glasovnic</small></div>
     <div class="kpi"><b>${K(rep.length,'int')} / ${A.length}</b><small>občin z izidi</small></div>
     <div class="kpi"><b>${stamp(S.datum)}</b><small>stanje pri DVK</small></div>
    </div>
@@ -539,7 +543,7 @@ function render(){
   const r=ro.filter(x=>x.b).map(x=>({...x,d:x.a.prc-x.b.prc})).sort((a,b)=>a.d-b.d).slice(0,12);
   $('#runoff').innerHTML=!r.length?empty(rep.length?'Trenutno ni občin, kjer bi vodilni imel manj kot 50 %.':''):
     `<p class="note">Občine, kjer vodilni nima večine; najtesnejše razlike najprej.</p><div class="cards">`+
-    r.map(x=>`<button class="card amb" data-m="${key(x.m.naz)}"><b>${esc(x.m.naz)} · razlika ${(x.d*100).toFixed(1).replace('.',',')}\u00a0o.\u00a0t.</b>${esc(x.a.naz)} ${pc(x.a.prc)}<br><span>${esc(x.b.naz)} ${pc(x.b.prc)}</span></button>`).join('')+`</div>`;
+    r.map(x=>`<button class="card amb" data-m="${key(x.m.naz)}"><b>${esc(x.m.naz)} · razlika ${(x.d*100).toFixed(1).replace('.',',')}\u00a0o.\u00a0t.</b>${esc(x.a.naz)} ${pc(x.a.prc)}${isM(key(x.m.naz),x.a.naz)?' <span class="incs">[na položaju]</span>':''}<br><span>${esc(x.b.naz)} ${pc(x.b.prc)}${isM(key(x.m.naz),x.b.naz)?' <span class="incs">[na položaju]</span>':''}</span></button>`).join('')+`</div>`;
 
   const seats=new Map();let tot=0,nm=0;const absM=[];
   A.filter(m=>m.full).forEach(m=>{const L=listTotals(m).filter(l=>l.man);if(L.length){nm++;const T=L.reduce((a,l)=>a+l.man,0),t=L.reduce((b,l)=>l.man>b.man?l:b);if(t.man*2>T)absM.push({m,t,T})}L.forEach(l=>{const g=group(l.naz),e=seats.get(g.l)||[0,g.c];e[0]+=l.man;seats.set(g.l,e);tot+=l.man})});
@@ -637,7 +641,7 @@ function renderMap(tur){
 }
 function renderInfo(){
   const m=S.M.get(S.hov||S.cur),l=leadList(m),natU=S.natU||0;
-  $('#mapinfo').innerHTML=`<div><b>${esc(m.naz)}</b><br><span style="color:var(--dim)">${m.glas?'udeležba '+pc(m.udel)+' ('+pp(m.udel-natU)+')':'udeležba –'}<br>Župan: ${m.zt?esc(m.zup[0].naz)+' · '+esc(m.zup[0].pred||'–')+' · '+pc(m.zup[0].prc)+(m.zup[1]?' · prednost '+(marg(m)*100).toFixed(1).replace('.',',')+'\u00a0o.\u00a0t.':' · brez protikandidata'):preZ(m)}<br>Svet: ${!hasS(m)?preS(m):maj(m)?'večinski sistem · izvoljenih '+m.svet.filter(x=>x.izv==1).length:l?esc(l.naz)+' · '+(m.full?pc(l.prc):glasov(l.gl))+(l.man?' · mandati:\u00a0'+l.man:''):'ni podatkov'}${m.k2&&m.k2.zt?'<br>2. krog: '+esc(m.k2.zup[0].naz)+' '+pc(m.k2.zup[0].prc):''}</span></div>`+(S.hov&&S.hov!==S.cur?'':'<button id="open">PODROBNO</button>');
+  $('#mapinfo').innerHTML=`<div><b>${esc(m.naz)}</b><br><span style="color:var(--dim)">${m.glas?'udeležba '+pc(m.udel)+' ('+pp(m.udel-natU)+')':'udeležba –'}<br>Župan: ${m.zt?esc(m.zup[0].naz)+(isM(key(m.naz),m.zup[0].naz)?' <span class="incs">[na položaju]</span>':'')+' · '+esc(m.zup[0].pred||'–')+' · '+pc(m.zup[0].prc)+(m.zup[1]?' · prednost '+(marg(m)*100).toFixed(1).replace('.',',')+'\u00a0o.\u00a0t.':' · brez protikandidata'):preZ(m)}<br>Svet: ${!hasS(m)?preS(m):maj(m)?'večinski sistem · izvoljenih '+m.svet.filter(x=>x.izv==1).length:l?esc(l.naz)+' · '+(m.full?pc(l.prc):glasov(l.gl))+(l.man?' · mandati:\u00a0'+l.man:''):'ni podatkov'}${m.k2&&m.k2.zt?'<br>2. krog: '+esc(m.k2.zup[0].naz)+' '+pc(m.k2.zup[0].prc):''}</span></div>`+(S.hov&&S.hov!==S.cur?'':'<button id="open">PODROBNO</button>');
 }
 
 function renderMuni(){
@@ -645,7 +649,7 @@ function renderMuni(){
   let h=`<div class="kpis">
     <div class="kpi"><b>${m.glas?pc(m.udel):'–'}</b><small>udeležba</small></div>
     <div class="kpi"><b>${m.glas?fmt(m.glas):'–'}</b><small>glasovalo</small></div>
-    <div class="kpi"><b>${m.upr?fmt(m.upr):'–'}</b><small>upravičencev</small></div>
+    <div class="kpi"><b>${m.odd?pc(preP(m)):'–'}</b><small>preštetih${m.odd?' · '+fmt(m.odd):''}</small></div>
     <div class="kpi"><b>${m.tip===2?'proporc.':m.tip===1?'večinski':'–'}</b><small>sistem za svet</small></div></div>`;
   h+=`<h3>ŽUPAN</h3>`;
   h+=m.zt?m.zup.map(c=>bar(c.naz,(c.pred||'')+(isM(key(m.naz),c.naz)?' · na položaju':''),c.prc,1,group(c.pred).c,pc(c.prc)+' · '+fmt(c.gl),50)).join('')+`<p class="note" style="margin-top:10px">${m.zup[0].prc>.5?'Vodilni je trenutno nad 50 %.':'Nihče nad 50 % — kaže na drugi krog.'} Rdeča črta označuje 50 %.</p>`
@@ -748,8 +752,8 @@ function parseExport(buf){
     const listMode=/^lista/i.test(String(o[oi][c.naz]??''));if(!tip)tip=listMode?2:1;
     for(const r of o.slice(oi+1)){if(!r||c.naz<0||!r[c.naz])continue;const g=int(r[c.gl]);votes+=g;const ve=c.ve>=0?int(r[c.ve])||1:1;
       sl.push(listMode?'S|'+clean(r[c.naz])+'|'+g+'|'+(c.man>=0?int(r[c.man]):0)+'|'+ve:'V|'+ve+'|'+clean(r[c.naz])+'|'+clean(c.pred>=0?r[c.pred]:'')+'|'+g+'|'+(c.izv>=0?int(r[c.izv]):0))}}
-  const upr=val('Število volilnih uprav'),glas=val('Glasovalo')||val('Oddanih');
-  const res={ts,has:votes>0||glas>0||(tip===1&&sl.length>0),rows:['O|'+S.M.get(k).naz+'|'+tip+'|'+upr+'|'+glas,...zl,...sl].join('\n')};
+  const upr=val('Število volilnih uprav'),glas=val('Glasovalo')||val('Oddanih'),odd=val('Oddanih');
+  const res={ts,has:votes>0||glas>0||(tip===1&&sl.length>0),rows:['O|'+S.M.get(k).naz+'|'+tip+'|'+upr+'|'+glas+(odd?'|'+odd:''),...zl,...sl].join('\n')};
   const c=sh('Občinski svet (kandidati)');
   let rows=[];
   if(c&&c.length){const ci=cols(c[0],{ve:/^ve$|enot/i,naz:/^kandidat/i,lista:/^lista/i,pref:/prefer/i,izv:/izvolit/i});
@@ -1014,10 +1018,10 @@ const hasS=m=>m.svet.some(x=>x.gl>0||x.man>0||x.izv==1);
 function tipHtml(m){
   const l=leadList(m),sw=c=>`<i style="background:${c}"></i>`;
   return `<b>${esc(m.naz)}</b><dl>`+
-    `<dt>Župan</dt><dd>${m.zt?sw(group(m.zup[0].pred).c)+esc(m.zup[0].naz)+" · "+pc(m.zup[0].prc)+"<small>"+esc(m.zup[0].pred||"–")+(m.zup[1]?" · prednost "+(marg(m)*100).toFixed(1).replace(".",",")+"\u00a0o.\u00a0t.":" · brez protikandidata")+"</small>":(solo(m)?sw(group(m.zup[0].pred).c):'')+preZ(m)+(m.zup.length?"<small>"+esc(solo(m)?m.zup[0].pred||'–':short(m.zup.map(c=>c.naz+(isM(key(m.naz),c.naz)?' (na položaju)':'')).join(', '),80))+"</small>":'')}</dd>`+
+    `<dt>Župan</dt><dd>${m.zt?sw(group(m.zup[0].pred).c)+esc(m.zup[0].naz)+" · "+pc(m.zup[0].prc)+(isM(key(m.naz),m.zup[0].naz)?' <span class="incs">[na položaju]</span>':'')+"<small>"+esc(m.zup[0].pred||"–")+(m.zup[1]?" · prednost "+(marg(m)*100).toFixed(1).replace(".",",")+"\u00a0o.\u00a0t.":" · brez protikandidata")+"</small>":(solo(m)?sw(group(m.zup[0].pred).c):'')+preZ(m)+(m.zup.length?"<small>"+esc(solo(m)?m.zup[0].pred||'–':short(m.zup.map(c=>c.naz+(isM(key(m.naz),c.naz)?' (na položaju)':'')).join(', '),80))+"</small>":'')}</dd>`+
     (m.k2&&m.k2.zt?`<dt>2. krog</dt><dd>${sw(group(m.k2.zup[0].pred).c)+esc(m.k2.zup[0].naz)} · ${pc(m.k2.zup[0].prc)}</dd>`:"")+
     `<dt>Svet</dt><dd>${!hasS(m)?preS(m):l?sw(group(l.naz).c)+esc(short(l.naz,30))+" · "+(m.full?pc(l.prc):glasov(l.gl)):maj(m)?"večinski sistem · izvoljenih "+m.svet.filter(x=>x.izv==1).length:"ni podatkov"}</dd>`+
-    (m.glas?`<dt>Udeležba</dt><dd>${pc(m.udel)+" ("+pp(m.udel-(S.natU||0))+")"}</dd>`:'')+`</dl>`;
+    (m.glas?`<dt>Udeležba</dt><dd>${pc(m.udel)+" ("+pp(m.udel-(S.natU||0))+")"}</dd>`:'')+(m.odd?`<dt>Prešteto</dt><dd>${pc(preP(m))}</dd>`:'')+`</dl>`;
 }
 if(matchMedia("(hover:hover)").matches){
   const tip=$("#tip");
