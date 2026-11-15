@@ -114,6 +114,9 @@ details.sec>summary span{color:var(--dim);font-weight:400;letter-spacing:.04em}
 .clh{display:flex;justify-content:space-between;gap:10px;font-size:12px}.clh i{display:inline-block;width:10px;height:10px;margin-right:6px;vertical-align:-1px}.clh span:last-child{color:var(--dim);white-space:nowrap}
 .cle{font-size:12px;color:var(--hi);margin:4px 0 2px 16px}
 .cl details{border:0;background:none;padding:0;margin:3px 0 0 16px}.cl summary{font-size:11px;letter-spacing:0}
+.pd>summary{list-style:none;cursor:pointer}.pd>summary::-webkit-details-marker{display:none}.pd>summary .lb::before{content:'▸ ';color:var(--dim)}.pd[open]>summary .lb::before{content:'▾ '}.pd>summary:hover .lb{color:var(--g)}
+.pdl{margin:0 0 10px 14px;padding-left:10px;border-left:1px solid var(--line)}.pdo{margin:4px 0;padding-left:28px;font-size:12px;columns:2;column-gap:52px}.pdo li{break-inside:avoid;margin:2px 0}.pdo small{color:var(--dim)}@media (max-width:640px){.pdo{columns:1}}
+.lk{background:none;border:0;padding:0;font:inherit;color:var(--g);cursor:pointer;letter-spacing:0;text-decoration:underline dotted;text-underline-offset:3px}
 .cl ol{margin:6px 0 2px;padding-left:28px;font-size:12px;columns:2;column-gap:52px}.cl li{break-inside:avoid}.cl li.el{color:var(--g);font-weight:700}.cl li small{color:var(--dim);font-weight:400}
 @media (max-width:640px){.cl ol{columns:1}}
 #tip{position:fixed;z-index:20;pointer-events:none;background:var(--panel);border:1px solid var(--g);padding:8px 10px;font-size:12px;max-width:340px;box-shadow:0 6px 18px rgba(0,0,0,.35)}
@@ -462,6 +465,30 @@ function animateChanges(){
   PREV.w=w;PREV.v=v;PREV.y=y;
 }
 const isOpen=(k,def)=>S.open.has(k)?S.open.get(k):def;
+const IND='NEODVISNI IN LOKALNE LISTE';
+function pbar(kind,label,html){if(label===IND)return html;const o='pd:'+kind+':'+label,op=isOpen(o,false);
+  return '<details class="pd" data-o="'+esc(o)+'" data-pk="'+kind+'" data-pl="'+esc(label)+'"'+(op?' open':'')+'><summary>'+html+'</summary><div class="pdl">'+(op?partyList(kind,label):'')+'</div></details>'}
+function partyList(kind,label){
+  const A=[...S.M.values()],li=(m,t,x)=>'<li><button class="lk" data-m="'+key(m.naz)+'">'+esc(m.naz)+'</button> <span>'+t+'</span>'+(x?' <small>'+x+'</small>':'')+'</li>';
+  if(kind==='z'){
+    const R=A.filter(m=>m.zt&&group(m.zup[0].pred).l===label).sort((a,b)=>b.zup[0].prc-a.zup[0].prc);
+    if(!R.length)return '<p class="note">Ni občin.</p>';
+    return '<p class="note">Vodilni kandidati te stranke ('+R.length+'); nad 50 % so izvoljeni že v prvem krogu.</p><ol class="pdo">'+R.map(m=>{const c=m.zup[0],k2=m.k2&&m.k2.zt?m.k2.zup[0]:null;
+      return li(m,esc(c.naz)+' · '+pc(c.prc),c.prc>.5?'izvoljen(a)':k2?('2. krog: '+esc(k2.naz)+' '+pc(k2.prc)):'drugi krog')}).join('')+'</ol>';
+  }
+  const out=[];let pend=0;
+  for(const m of A){const k=key(m.naz);
+    if(m.tip===1){m.svet.filter(c=>c.izv==1&&group(c.pred).l===label).forEach(c=>out.push([m,c.naz,'VE '+c.ve]));continue}
+    if(!m.full)continue;const L=listTotals(m).filter(l=>l.man&&group(l.naz).l===label);if(!L.length)continue;
+    const cd=STAT&&STAT.cand&&STAT.cand[k]?candUnpack(STAT.cand[k].rows):(CAND.get(k)||{}).rows||[];
+    for(const l of L){const el=cd.filter(r=>key(r[1])===key(l.naz)&&r[3]===1);
+      if(el.length)el.forEach(r=>out.push([m,r[0],'']));else{pend+=l.man;out.push([m,null,l.naz+' · mandatov: '+l.man+' (imena še niso uradna)'])}}
+  }
+  if(!out.length)return '<p class="note">Ni izvoljenih.</p>';
+  const n=out.filter(x=>x[1]).length;
+  return '<p class="note">Izvoljeni po uradnem statusu DVK: '+n+(pend?' · še brez imen: '+pend+' mandatov':'')+'. Vključuje tudi večinske svete.</p><ol class="pdo">'+out.sort((a,b)=>a[0].naz.localeCompare(b[0].naz,'sl')).map(([m,nm,x])=>li(m,nm?esc(nm):'',esc(x))).join('')+'</ol>';
+}
+document.addEventListener('toggle',e=>{const d=e.target;if(d&&d.classList&&d.classList.contains('pd')&&d.open){const b=d.querySelector('.pdl');if(!b.innerHTML)b.innerHTML=partyList(d.dataset.pk,d.dataset.pl)}},true);
 document.addEventListener('toggle',e=>{const d=e.target;if(d&&d.dataset&&d.dataset.o)S.open.set(d.dataset.o,d.open)},true);
 const say=t=>{$('#msg').textContent=t};
 
@@ -540,7 +567,8 @@ function render(){
       <div class="kpi"><b style="color:var(--dim)">${K(A.length-rep.length,"int")}</b><small>brez izidov</small></div>
      </div>
      <h3>VODILNI KANDIDATI PO PREDLAGATELJU</h3>
-     ${top.map(([k,[v,c]])=>bar(k,'',v,mx,c,v)).join('')}
+     <p class="note">Klik na stranko pokaže njene kandidate.</p>
+     ${top.map(([k,[v,c]])=>pbar('z',k,bar(k,'',v,mx,c,v))).join('')}
      ${INC?(()=>{const R=lead.filter(x=>x.m.zup.some(c=>isM(key(x.m.naz),c.naz))),w=R.filter(x=>isM(key(x.m.naz),x.a.naz)).length;return R.length?'<h3>SEDANJI ŽUPANI</h3>'+bar('Vodi','',w,R.length,'var(--g)',w+' · '+pc(w/R.length))+bar('Zaostaja','',R.length-w,R.length,'var(--red)',(R.length-w)+' · '+pc((R.length-w)/R.length)):''})():''}
      <h3>STRANKE : NEODVISNI</h3>
      ${(()=>{const p=lead.filter(x=>group(x.a.pred).l!=='NEODVISNI IN LOKALNE LISTE').length,n=lead.length-p;return bar('S podporo državne stranke','',p,lead.length,'var(--g)',p+' · '+pc(p/lead.length))+bar('Neodvisni in lokalne liste','',n,lead.length,tint('#9aa3a0'),n+' · '+pc(n/lead.length))})()}`;
@@ -558,7 +586,7 @@ function render(){
   else{
     const top=[...seats.entries()].sort((a,b)=>b[1][0]-a[1][0]),mx=top[0][1][0];
     $('#council').innerHTML=`<p class="note">Seštevek mandatov po strankah v ${nm} ${nm===1?"občini":"občinah"} s popolnimi podatki o svetu (${fmt(tot)} mandatov). Občine z večinskim sistemom nimajo list in niso vštete.</p>`+
-     top.map(([k,[v,c]])=>bar(k,'',v,mx,c,v)).join('')+
+     '<p class="note">Klik na stranko pokaže njene izvoljene svetnike.</p>'+top.map(([k,[v,c]])=>pbar('s',k,bar(k,'',v,mx,c,v))).join('')+
      `<h3>VEČINE V SVETIH</h3><div class="kpis k3"><div class="kpi"><b>${nm}</b><small>svetov z mandati</small></div><div class="kpi"><b class="amb-t">${nm-absM.length}</b><small>brez večine ene liste</small></div><div class="kpi"><b>${absM.length}</b><small>z absolutno večino</small></div></div>`+
      (absM.length?'<div class="cards">'+absM.sort((a,b)=>b.t.man/b.T-a.t.man/a.T).slice(0,9).map((x,i)=>rcard('abs'+i,'ABSOLUTNA VEČINA',x.m,x.t.man+' / '+x.T,esc(x.t.naz))).join('')+'</div>'+(absM.length>9?'<p class="note" style="margin:8px 0 0">in še '+esc(absM.slice(9).map(x=>x.m.naz).join(', '))+'.</p>':''):'');
   }
@@ -847,13 +875,15 @@ function subUnitHtml(k,u,i){
   if(u.tip===2){
     const tot=u.S.reduce((a,l)=>a+l.gl,0),L=tot?[...u.S].sort((a,b)=>b.gl-a.gl):u.S,mx=Math.max(...L.map(l=>l.gl),1);
     h+=tot||u.S.some(l=>l.man)?L.map(l=>bar(l.naz,'',l.gl,tot?mx:0,group(l.naz).c,tot?pc(l.gl/tot)+(l.man?' · mandati:\u00a0'+l.man:''):(l.man?'mandati:\u00a0'+l.man:''))).join(''):`<p class="note">Liste (${L.length}); izidov še ni.</p>`;
-    const official=u.G.some(g=>g.c.some(c=>c.izv===1)),mapOK=u.G.length===u.S.length;
+    const official=u.G.some(g=>g.c.some(c=>c.izv===1)),SK=new Map(u.S.map(l=>[key(l.naz),l])),byName=u.G.length&&u.G.every(g=>SK.has(key(g.pred))),mapOK=byName||(!tot&&u.G.length===u.S.length);
+    const lOf=(g,j)=>byName?SK.get(key(g.pred)):mapOK?u.S[j]:null;
+    const GG=u.G.map((g,j)=>({g,j,l:lOf(g,j)}));if(byName&&tot)GG.sort((a,b)=>b.l.gl-a.l.gl);
     if(u.G.length)h+=`<p class="note" style="margin-top:12px">${official?'Izvoljeni po uradnem statusu DVK.':mapOK&&u.S.some(l=>l.man)?'Predvideni izvoljeni po vrstnem redu na listi in številu mandatov; preferenčni glasovi lahko vrstni red spremenijo.':'Kandidati po listah, v vrstnem redu z liste.'}</p>`;
-    u.G.forEach((g,j)=>{
-      const l=mapOK?u.S[j]:null,n=official?0:(l&&l.man?l.man:0),isEl=(c,x)=>official?c.izv===1:x<n,el=g.c.filter(isEl);
+    GG.forEach(({g,j,l})=>{
+      const n=official?0:(l&&l.man?l.man:0),isEl=(c,x)=>official?c.izv===1:x<n,el=g.c.filter(isEl);
       h+=`<div class="cl"><div class="clh"><span><i style="background:${group(l?l.naz:g.pred).c}"></i>${esc(l?l.naz:g.pred)}</span><span>${el.length?(official?'izvoljenih: ':'predvidenih: ')+el.length:''}</span></div>`+
         (el.length?`<div class="cle">${el.map(c=>esc(c.naz)+(c.pref?' <small style="color:var(--dim)">('+fmt(c.pref)+')</small>':'')).join(', ')}</div>`:'')+
-        `<details data-o="s:${k}:${i}:${j}"${isOpen('s:'+k+':'+i+':'+j,false)?' open':''}><summary>vsi kandidati (${g.c.length})${l?' · predlagatelj: '+esc(g.pred):''}</summary><ol>${g.c.map((c,x)=>li(c,isEl(c,x))).join('')}</ol></details></div>`;
+        `<details data-o="s:${k}:${i}:${j}"${isOpen('s:'+k+':'+i+':'+j,false)?' open':''}><summary>vsi kandidati (${g.c.length})${l&&key(l.naz)!==key(g.pred)?' · predlagatelj: '+esc(g.pred):''}</summary><ol>${g.c.map((c,x)=>li(c,isEl(c,x))).join('')}</ol></details></div>`;
     });
   }else{
     const any=u.V.some(c=>c.gl>0),multi=new Set(u.V.map(c=>c.ve)).size>1;
