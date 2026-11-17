@@ -2,15 +2,19 @@ name: probe
 on:
   workflow_dispatch:
 permissions:
-  contents: read
+  contents: write
 jobs:
   probe:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
+      - uses: actions/checkout@v4
       - run: |
           UA='lv2026-tracker (+https://github.com/collarcore/silver-invention)'
           B=https://volitve.dvk-rs.si/dz2026
-          curl -s -A "$UA" "$B/" -o idx.html; echo "== index $(wc -c <idx.html)"; grep -o 'src="[^"]*\.js"\|href="[^"]*\.css"' idx.html | head
-          for js in $(grep -o 'src="[^"]*\.js"' idx.html | sed 's/src="//;s/"$//'); do u="$js"; case "$u" in http*) ;; /*) u="https://volitve.dvk-rs.si$u";; *) u="$B/$u";; esac; curl -s -A "$UA" "$u" -o a.js; echo "== $u $(wc -c <a.js)"; grep -o '"[a-zA-Z0-9_/.{}$-]*\.\(json\|csv\|xlsx\)"\|`[^`]*\.\(json\|csv\|xlsx\)`\|[a-zA-Z0-9_/-]*/data/[a-zA-Z0-9_/.{}$-]*' a.js | sort -u | head -60; done
-          for p in data/data.json data/obcine.json data/rezultati.json data/stranke.json config/config.json data/okraji.json data/obcine.csv data/rezultati_obcine.csv; do echo "-- $p $(curl -s -A "$UA" -o /tmp/x -w '%{http_code} %{size_download}' "$B/$p")"; head -c 300 /tmp/x | tr -c '[:print:]\n' '.'; echo; done
+          mkdir -p ref/dz2026
+          curl -s -A "$UA" "$B/config/config.json" -o ref/dz2026/config.json; cat ref/dz2026/config.json
+          for f in data.json rezultati.json liste.json; do curl -s -A "$UA" "$B/data/$f" -o ref/dz2026/$f; done
+          ls -la ref/dz2026
+          git config user.name "lv2026-zajem"; git config user.email "actions@users.noreply.github.com"
+          git add ref/dz2026 && git commit -q -m "ref: DZ 2026 results" && git pull -q --rebase origin main && git push -q
