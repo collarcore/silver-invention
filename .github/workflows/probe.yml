@@ -1,0 +1,15 @@
+name: probe
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - run: |
+          UA='lv2026-tracker (+https://github.com/collarcore/silver-invention)'
+          for u in arhivi/volitve2018/lv2018/data/obcine-xlsx/izvoz_061.xlsx arhivi/volitve2018/lv2018/config/config.json arhivi/volitve2018/lv2018/data/data.json arhivi/lv2018/data/obcine-xlsx/izvoz_061.xlsx arhivi/volitve2018/lv2018/ arhivi/ ; do
+            code=$(curl -s -L -A "$UA" -o /tmp/f -w '%{http_code} %{size_download} %{content_type} %{url_effective}' "https://www.dvk-rs.si/$u"); echo "== $u -> $code"; head -c 600 /tmp/f | tr -c '[:print:]\n' '.' | grep -io 'href="[^"]*20[01][0-9][^"]*"' | head -20; echo
+          done
