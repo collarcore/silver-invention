@@ -2,14 +2,21 @@ name: probe
 on:
   workflow_dispatch:
 permissions:
-  contents: read
+  contents: write
 jobs:
   probe:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
+      - uses: actions/checkout@v4
       - run: |
           UA='lv2026-tracker (+https://github.com/collarcore/silver-invention)'
-          for u in arhivi/volitve2018/lv2018/data/obcine-xlsx/izvoz_061.xlsx arhivi/volitve2018/lv2018/config/config.json arhivi/volitve2018/lv2018/data/data.json arhivi/lv2018/data/obcine-xlsx/izvoz_061.xlsx arhivi/volitve2018/lv2018/ arhivi/ ; do
-            code=$(curl -s -L -A "$UA" -o /tmp/f -w '%{http_code} %{size_download} %{content_type} %{url_effective}' "https://www.dvk-rs.si/$u"); echo "== $u -> $code"; head -c 600 /tmp/f | tr -c '[:print:]\n' '.' | grep -io 'href="[^"]*20[01][0-9][^"]*"' | head -20; echo
-          done
+          mkdir -p ref/kand
+          g(){ code=$(curl -s -L -A "$UA" -o "$2" -w '%{http_code} %{size_download} %{content_type}' "$1"); echo "$1 -> $code"; head -c 200 "$2"; echo; }
+          g https://volitve.dvk-rs.si/dz2026/data/kandidati.json ref/kand/dz2026.json
+          g https://www.dvk-rs.si/arhivi/volitve2022/dz2022/data/kandidati.json ref/kand/dz2022.json
+          g https://www.dvk-rs.si/arhivi/volitve2022/dz2022/config/config.json /tmp/c22.json
+          for f in ref/kand/*.json; do head -c 1 "$f" | grep -q '[\[{]' || rm -f "$f"; done
+          ls -la ref/kand
+          git config user.name "lv2026-zajem"; git config user.email "actions@users.noreply.github.com"
+          git add ref/kand && git commit -q -m "ref: parliamentary candidate lists" && git pull -q --rebase origin main && git push -q || true
