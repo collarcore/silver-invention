@@ -134,6 +134,9 @@ details.sec>summary span{color:var(--dim);font-weight:400;letter-spacing:.04em}
 .blg span{display:inline-flex;align-items:center;gap:5px}.blg i{width:9px;height:9px;display:inline-block}
 .chips.pre button{border-style:dashed}
 .note.small{font-size:10px}
+.bbar i.est{background:repeating-linear-gradient(135deg,var(--bc) 0 3px,color-mix(in srgb,var(--bc) 35%,var(--bg)) 3px 6px)!important}
+.chips.oc{font-size:11px;color:var(--dim);align-items:center;margin-top:6px}.chips.oc button{padding:2px 8px;font-size:11px}
+.est-l{margin:6px 0;font-size:11px}.est-l summary{cursor:pointer;color:var(--dim)}.est-l p{margin:5px 0}.est-l p.off{opacity:.45}.est-l span{color:var(--dim)}.est-l small{color:var(--dim)}
 .chips{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0}
 .chips button{font-size:11px;padding:6px 8px;color:var(--txt)}
 .chips button.on{color:#111}
@@ -275,7 +278,10 @@ const BLOCS=[['L',/gibanje svoboda/i],['L',/socialni demokrati|\bsd\b/i],['L',/\
  ['D',/slovensk[ae] demokratsk|\bsds\b/i],['D',/nova slovenija|\bnsi\b/i],['D',/ljudsk[ae] strank|\bsls\b/i],['D',/\bfokus\b/i],['D',/demokrati\.|anžeta logarja/i],['D',/nacionalna stranka|\bsns\b/i],['D',/glas za otroke/i],
  ['S',/resni\.?ca/i],['S',/\bdesus\b|stranka upokojencev/i],['S',/prerod/i],['S',/stranka generacij/i],['S',/stranka krajevnih skupnosti/i]];
 const BLOCN={L:'levi blok',S:'drugo',X:'lokalne liste',D:'desni blok'};
-const blocOf=n=>{n=String(n||'');if(/skupin[aeo] voliv/i.test(n))return 'X';const b=new Set(BLOCS.filter(([,r])=>r.test(n)).map(([x])=>x));
+let OCENE=null;const OCN={1:'šibka',2:'srednja',3:'močna'},BLW={L:'levo',D:'desno',S:'sredina'};
+try{const v=localStorage.getItem('lv2026-oc');if(v!==null)S0oc=+v}catch(e){}
+const est=(k,n)=>{if(!OCENE||!k||!S.oc)return null;const e=(OCENE[k]||{})[key(n)];return e&&e[1]>=S.oc?e:null};
+const blocOf=(n,k)=>{const e=est(k,n);if(e)return e[0];n=String(n||'');if(/skupin[aeo] voliv/i.test(n))return 'X';const b=new Set(BLOCS.filter(([,r])=>r.test(n)).map(([x])=>x));
   if(!b.size)return 'X';if(b.size===1)return [...b][0];if(!b.has('D'))return 'L';if(!b.has('L'))return 'D';return 'X'};
 const blocColor=b=>b==='L'?tint('#5b8def'):b==='D'?tint('#e0603f'):b==='S'?'var(--cy)':'color-mix(in srgb,var(--dim) 60%,var(--bg))';
 /* lists that back a mayoral candidate: a proposing party, a list named in the proposer, or a list carrying the candidate's surname */
@@ -293,7 +299,7 @@ const LS='lv2026-manual';
 /* state: 212 municipalities always present (names from the map), data overlaid */
 const blank=naz=>({naz,tip:0,upr:0,glas:0,odd:0,udel:0,zup:[],zt:0,svet:[],full:false,k2:null});
 const rankZ=z=>{z.sort((a,b)=>b.gl-a.gl);const t=z.reduce((a,c)=>a+c.gl,0);z.forEach(c=>c.prc=t?c.gl/t:0);return t};
-const S={src:'feed',datum:null,updated:null,nat:null,M:new Map(),xl:new Map(),open:new Map(),coal:new Set(),cur:key('Ljubljana'),mode:'pred',link:'wait',feed:[]};
+const S={src:'feed',datum:null,updated:null,nat:null,M:new Map(),xl:new Map(),open:new Map(),coal:new Set(),cur:key('Ljubljana'),mode:'pred',link:'wait',feed:[],oc:2};if(S0oc===0||S0oc===1||S0oc===2)S.oc=S0oc;
 function reset(){S.M=new Map(GEO.p.map(([n])=>[key(n),blank(n)]));S.datum=S.updated=S.nat=null}
 function put(m){
   const k=key(m.naz),base=S.M.get(k);if(!base)return false;
@@ -379,11 +385,12 @@ function wipe(host){
   let t0=0,n=0;requestAnimationFrame(function step(t){if(!host.isConnected){line.remove();return}if(++n<2){requestAnimationFrame(step);return}if(!t0)t0=t;
     const p=(t-t0)/SCAN;if(p>=1){host.remove();line.remove();return}set(p);requestAnimationFrame(step)});
 }
-const STATIC=!(window.claude&&window.claude.use)&&/^https?:$/.test(location.protocol);let STAT=null;
+const STATIC=!(window.claude&&window.claude.use)&&/^https?:$/.test(location.protocol);let STAT=null;var S0oc=null;
 const localISO=()=>new Date(Date.now()-new Date().getTimezoneOffset()*6e4).toISOString().slice(0,16);
 async function loadStatic(t){
   const go=async()=>{
     try{const r=await fetch('data.json?t='+Math.floor(Date.now()/20000),{cache:'no-store'});if(!r.ok)throw 0;const j=await r.json();if(!j||!j.xl)throw 0;clearTimeout(t);
+      if(!loadStatic.oc){loadStatic.oc=1;fetch('ocene.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).then(x=>{if(x&&x.m){OCENE=x.m;render()}}).catch(()=>{})}
       if(!INC&&!loadStatic.inc){loadStatic.inc=1;fetch('inc.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).then(x=>{if(x&&x.m){INC=x;render()}}).catch(()=>{})}
       if(STAT&&STAT.at===j.at)return;const first=!STAT;STAT=j;S.xl=new Map(Object.entries(j.xl));CAND.clear();SUB.clear();S.link='on';refreshFeed(first);
     }catch(e){if(!STAT){clearTimeout(t);setLink('slow')}}
@@ -673,7 +680,7 @@ function renderMap(tur){
     else if(S.mode==='odst'){if(m.glas&&m.upr){const d=Math.max(-1,Math.min(1,(m.udel-natU)/.15));f=d>=0?'var(--g)':'var(--red)';o=.22+.78*Math.abs(d)}}
     else if(S.mode==='svet'){const g=gS(m);if(g)f=g.c}
     else if(S.mode==='blok'){const W=m.tip===2&&m.full?listTotals(m).filter(l=>l.man):m.tip===1?[...m.svet.filter(c=>c.izv==1).reduce((a,c)=>{a.set(c.pred||'',(a.get(c.pred||'')||0)+1);return a},new Map())].map(([naz,man])=>({naz,man})):[];
-      const n=W.reduce((a,l)=>a+l.man,0);if(n){const t=blocSums(W),mj=Math.floor(n/2)+1;if(t.L>=mj)f=blocColor('L');else if(t.D>=mj)f=blocColor('D');else{f='var(--amb)';o=.3+.7*Math.min(t.X/n/.6,1)}}}
+      const n=W.reduce((a,l)=>a+l.man,0);if(n){const t=blocSums(W,p.dataset.k),mj=Math.floor(n/2)+1;if(t.L>=mj)f=blocColor('L');else if(t.D>=mj)f=blocColor('D');else{f='var(--amb)';o=.3+.7*Math.min(t.X/n/.6,1)}}}
     else if(S.mode==='k2'){if(m.k2&&m.k2.zt){f='var(--g)';o=.35+.65*Math.min(Math.max(m.k2.zup[0].prc-.5,0)/.25,1)}else if(ro(m))f='var(--amb)'}
     else if(S.mode==='kand'){const n=m.zup.length;if(n===1)f='var(--amb)';else if(n>1){f='var(--g)';o=n===2?.28:n===3?.5:n<6?.75:1}}
     else if(solo(m)){if(S.mode==='zup')f='var(--g)';else if(S.mode==='pred')f=gP(m).c}
@@ -695,7 +702,7 @@ function renderMap(tur){
     :S.mode==='kand'?'<span>število kandidatov za župana:</span>'+sw('var(--amb)','1 · brez protikandidata')+[[2,28],[3,50],['4–5',75],['6+',100]].map(([t,p])=>sw(mix('--g',p),t)).join('')+nd
     :S.mode==='pred'?'<span>predlagatelj vodilnega kandidata za župana:</span>'+cats()
     :S.mode==='svet'?'<span>lista z največ glasovi za občinski svet; pri večinskem sistemu predlagatelj največ izvoljenih (pred izidi: kandidatov brez protikandidata):</span>'+cats()
-    :S.mode==='blok'?sw(blocColor('L'),'levi blok ima večino sam')+sw(blocColor('D'),'desni blok ima večino sam')+sw('var(--amb)','odločajo lokalne liste (močnejša barva = več lokalnih mandatov)')+nd
+    :S.mode==='blok'?sw(blocColor('L'),'levi blok ima večino sam')+sw(blocColor('D'),'desni blok ima večino sam')+sw('var(--amb)','odločajo lokalne liste (močnejša barva = več neuvrščenih mandatov)')+(S.oc?'<span>vključene ocene lokalnih list ('+(S.oc===2?'zanesljivejše':'vse')+')</span>':'')+nd
     :S.mode==='k2'?sw('var(--g)','izid drugega kroga (močnejša barva = večja prednost)')+sw('var(--amb)','drugi krog, še brez izida')+sw('var(--nd)','brez drugega kroga')
     :sw('var(--g)','vodilni nad 50 % ali brez protikandidata')+sw('var(--amb)','kaže na drugi krog')+nd;
   S.natU=natU;renderInfo();
@@ -726,8 +733,8 @@ function renderMuni(){
   }else if(m.tip===1&&!seats){
     const C=[...m.svet].sort((a,b)=>String(a.ve).localeCompare(String(b.ve),'sl',{numeric:true})||b.gl-a.gl),mx=Math.max(...C.map(c=>c.gl),1);
     h+=C.map(c=>bar(c.naz,`VE ${c.ve??'–'}${c.pred?' · '+c.pred:''}${isS(key(m.naz),c.naz)?' · mandat 2022–26':''}`,c.gl,mx,c.izv==1?'var(--g)':'var(--dim)',fmt(c.gl)+(c.izv==1?' · izvoljen(a)':''))).join('');
-    const E=m.svet.filter(c=>c.izv==1);if(m.tip===1&&E.length){const W=[...E.reduce((a,c)=>{const n=c.pred||'skupina volivcev';a.set(n,(a.get(n)||0)+1);return a},new Map())].map(([naz,man])=>({naz,man})),n=E.length,mj=Math.floor(n/2)+1,t=blocSums(W);
-      h+='<div class="coal"><h3 style="margin-top:0">BLOKI <span style="color:var(--dim);font-weight:400">// IZVOLJENI PO PREDLAGATELJIH</span></h3>'+blocBar(t,n,mj)+'<p class="note">'+(t.L>=mj?'Levi blok ima večino sam.':t.D>=mj?'Desni blok ima večino sam.':'Noben blok nima večine sam: odločajo svetniki skupin volivcev ('+t.X+').')+' Večina je '+mj+' od '+n+'.</p></div>'}
+    const E=m.svet.filter(c=>c.izv==1);if(m.tip===1&&E.length){const W=[...E.reduce((a,c)=>{const n=c.pred||'skupina volivcev';a.set(n,(a.get(n)||0)+1);return a},new Map())].map(([naz,man])=>({naz,man})),n=E.length,mj=Math.floor(n/2)+1,t=blocSums(W,key(m.naz));
+      h+='<div class="coal"><h3 style="margin-top:0">BLOKI <span style="color:var(--dim);font-weight:400">// IZVOLJENI PO PREDLAGATELJIH</span></h3>'+blocBar(t,n,mj)+'<p class="note">'+(t.L>=mj?'Levi blok ima večino sam.':t.D>=mj?'Desni blok ima večino sam.':'Noben blok nima večine sam: odločajo svetniki skupin volivcev ('+t.X+').')+' Večina je '+mj+' od '+n+'.</p>'+estHtml(key(m.naz),W)+'</div>'}
   }else{
     const mx=Math.max(...L.map(l=>l.prc),.01);
     h+=L.map(l=>bar(l.naz,'',l.prc,mx,colorOf(l.naz),(m.full?pc(l.prc):glasov(l.gl))+(l.man?' · mandati:\u00a0'+l.man:''))).join('');
@@ -751,19 +758,26 @@ function renderMuni(){
   if(window.syncCb)syncCb();
 }
 
-function blocSums(W){const t={L:0,S:0,X:0,D:0};W.forEach(l=>t[blocOf(l.naz)]+=l.man);return t}
+function blocSums(W,k){const t={L:0,S:0,X:0,D:0,e:{L:0,S:0,D:0}};W.forEach(l=>{const b=blocOf(l.naz,k);t[b]+=l.man;if(est(k,l.naz))t.e[b]+=l.man});return t}
 function blocBar(t,seats,maj){
-  return '<div class="bbar">'+['L','S','X','D'].filter(b=>t[b]).map(b=>'<i style="width:'+(t[b]/seats*100)+'%;background:'+blocColor(b)+'" title="'+BLOCN[b]+': '+t[b]+'"></i>').join('')+'<u style="left:'+(maj/seats*100)+'%"></u></div>'
-   +'<div class="blg">'+['L','S','X','D'].filter(b=>t[b]).map(b=>'<span><i style="background:'+blocColor(b)+'"></i>'+BLOCN[b]+' '+t[b]+'</span>').join('')+'</div>';
+  const e=t.e||{},seg=(b,n,h)=>n?'<i class="'+(h?'est':'')+'" style="width:'+(n/seats*100)+'%;--bc:'+blocColor(b)+';background:'+blocColor(b)+'" title="'+BLOCN[b]+(h?' (ocena)':'')+': '+n+'"></i>':'';
+  return '<div class="bbar">'+['L','S','X','D'].filter(b=>t[b]).map(b=>b==='D'?seg(b,e[b]||0,1)+seg(b,t[b]-(e[b]||0)):seg(b,t[b]-(e[b]||0))+seg(b,e[b]||0,1)).join('')+'<u style="left:'+(maj/seats*100)+'%"></u></div>'
+   +'<div class="blg">'+['L','S','X','D'].filter(b=>t[b]).map(b=>'<span><i style="background:'+blocColor(b)+'"></i>'+BLOCN[b]+' '+t[b]+(e[b]?' (od tega ocena '+e[b]+')':'')+'</span>').join('')+'</div>';
 }
 function blocHtml(m,W,seats,maj){
-  const t=blocSums(W),who=t.L>=maj?'Levi blok ima večino sam.':t.D>=maj?'Desni blok ima večino sam.':'Noben blok nima večine sam: odločajo lokalne liste ('+t.X+' mandatov).';
+  const k=key(m.naz),t=blocSums(W,k),who=t.L>=maj?'Levi blok ima večino sam'+(t.L-t.e.L<maj?' (z ocenjenimi listami)':'')+'.':t.D>=maj?'Desni blok ima večino sam'+(t.D-t.e.D<maj?' (z ocenjenimi listami)':'')+'.':'Noben blok nima večine sam: odločajo lokalne liste ('+t.X+' mandatov).';
   const z=m.k2&&m.k2.zt?[m.k2.zup[0]]:m.zt?(m.zup[0].prc>.5||!m.zup[1]?[m.zup[0]]:[m.zup[0],m.zup[1]]):[];
-  const pre=[];if(t.L)pre.push(['levi blok',W.filter(l=>blocOf(l.naz)==='L')]);if(t.D)pre.push(['desni blok',W.filter(l=>blocOf(l.naz)==='D')]);
+  const pre=[];if(t.L)pre.push(['levi blok',W.filter(l=>blocOf(l.naz,k)==='L')]);if(t.D)pre.push(['desni blok',W.filter(l=>blocOf(l.naz,k)==='D')]);
   z.forEach(c=>{const ml=mayorLists(c,W);if(ml.length)pre.push([(z.length>1?'kandidat ':'župan ')+c.naz,ml])});
   return blocBar(t,seats,maj)+'<p class="note">'+who+(z.length>1?' Župan še ni izvoljen (drugi krog).':'')+'</p>'
    +(pre.length?'<div class="chips pre">'+pre.map(([n,ls])=>{const v=ls.reduce((a,l)=>a+l.man,0);return '<button data-pre="'+esc(ls.map(l=>l.naz).join('\u0001'))+'">'+esc(n)+' · '+v+(v>=maj?' ✓':' · manjka '+(maj-v))+'</button>'}).join('')+'</div>':'')
-   +'<p class="note small">Bloki zajemajo samo državne stranke; usmeritve lokalnih list iz imena ni mogoče razbrati. Županove liste so tiste, ki so ga predlagale ali nosijo njegovo ime.</p>';
+   +estHtml(k,W);
+}
+function estHtml(k,W){
+  const E=OCENE?W.map(l=>[l,(OCENE[k]||{})[key(l.naz)]]).filter(x=>x[1]):[];
+  return (E.length?'<details class="est-l"><summary>Ocene lokalnih list ('+E.length+')</summary>'+E.map(([l,e])=>'<p class="'+(e[1]>=(S.oc||9)?'':'off')+'"><b style="color:'+blocColor(e[0])+'">'+BLW[e[0]]+'</b> <span>'+OCN[e[1]]+'</span> · '+esc(l.naz)+' · '+l.man+'<br><small>'+esc(e[2])+'</small></p>').join('')+'</details>':'')
+   +'<div class="chips oc">ocene lokalnih list: '+[[0,'izklop'],[2,'zanesljivejše'],[1,'vse']].map(([v,n])=>'<button data-oc="'+v+'" class="'+(S.oc===v?'on':'')+'">'+n+'</button>').join('')+'</div>'
+   +'<p class="note small">Bloki državnih strank so iz imen list. Lokalne liste so uvrščene samo po oceni (črtkano): kje so njihovi kandidati kandidirali za stranke na lokalnih volitvah 2022 ali državnozborskih 2026. Močna = vsaj 3 kandidati, 75 % v isto smer; srednja = 2; šibka = 1. To ni izjava liste. Županove liste so tiste, ki so ga predlagale ali nosijo njegovo ime.</p>';
 }
 /* ---- candidate lists from DVK Excel exports ---- */
 const CAND=new Map();let DB=null;
@@ -1126,6 +1140,7 @@ document.addEventListener('click',e=>{
   if(t.id==='open')return $('#term').scrollIntoView({behavior:'smooth',block:'start'});
   if((x=t.closest('[data-m]')))return pick(x.dataset.m,true);
   if((x=t.closest('[data-mode]'))){S.modeSet=true;S.mode=x.dataset.mode;document.querySelectorAll('[data-mode]').forEach(b=>b.classList.toggle('on',b===x));return render()}
+  if((x=t.closest('[data-oc]'))){S.oc=+x.dataset.oc;try{localStorage.setItem('lv2026-oc',S.oc)}catch(e){}render();return}
   if((x=t.closest('[data-pre]'))){S.coal.clear();x.dataset.pre.split('\u0001').forEach(k=>S.coal.add(k));renderMuni()}
   if((x=t.closest('[data-l]'))){const k=x.dataset.l;S.coal.has(k)?S.coal.delete(k):S.coal.add(k);renderMuni()}
 });
