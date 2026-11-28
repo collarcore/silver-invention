@@ -195,7 +195,7 @@ section:nth-of-type(2n)>h2::before{animation-delay:1.1s}section:nth-of-type(3n)>
 <header>
   <canvas id="rain"></canvas>
   <h1>LV2026 // RESULTS TRACKER</h1><div class="sub">LOKALNE VOLITVE · 15. 11. 2026 · 212 OBČIN</div>
-  <dl class="status"><dt>ZAJEM</dt><dd><i class="led" id="led"></i><span id="link">povezujem …</span></dd><dt>VOLIŠČA</dt><dd id="clock"></dd><dt>TEMA</dt><dd><span class="themes" id="themes" role="group" aria-label="Barvna tema"><button data-th="matrix">matrix</button><button data-th="calm">umirjena</button><button data-th="amber">jantar</button><button data-th="light">svetla</button></span></dd></dl>
+  <dl class="status"><dt>ZAJEM</dt><dd><i class="led" id="led"></i><span id="link">povezujem …</span></dd><dt>VOLIŠČA</dt><dd id="clock"></dd><dt>TEMA</dt><dd><span class="themes" id="themes" role="group" aria-label="Barvna tema"><button data-th="matrix">matrix</button><button data-th="calm">umirjena</button><button data-th="amber">jantar</button><button data-th="light">svetla</button></span></dd><dt>OBVESTILA</dt><dd><span class="themes"><button id="notif" type="button">vklopi</button></span></dd></dl>
 </header>
 <div id="sim"></div>
 
@@ -389,15 +389,35 @@ function wipe(host){
 const STATIC=!(window.claude&&window.claude.use)&&/^https?:$/.test(location.protocol);let STAT=null;var S0oc=null;
 const localISO=()=>new Date(Date.now()-new Date().getTimezoneOffset()*6e4).toISOString().slice(0,16);
 async function loadStatic(t){
-  const go=async()=>{
-    try{const r=await fetch('data.json?t='+Math.floor(Date.now()/20000),{cache:'no-store'});if(!r.ok)throw 0;const j=await r.json();if(!j||!j.xl)throw 0;clearTimeout(t);
+  const go=async(poll)=>{
+    try{const u='data.json?t='+Math.floor(Date.now()/20000);
+      if(poll&&STAT){try{const h=await fetch(u,{method:'HEAD',cache:'no-store'}),e=h.ok&&h.headers.get('etag');if(e&&e===loadStatic.etag)return}catch(e){}}
+      const r=await fetch(u,{cache:'no-store'});loadStatic.etag=r.headers.get('etag')||null;if(!r.ok)throw 0;const j=await r.json();if(!j||!j.xl)throw 0;clearTimeout(t);
       if(!loadStatic.oc){loadStatic.oc=1;fetch('ocene.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).then(x=>{if(x&&x.m){OCENE=x.m;PREJ=x.z||null;render()}}).catch(()=>{})}
       if(!INC&&!loadStatic.inc){loadStatic.inc=1;fetch('inc.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).then(x=>{if(x&&x.m){INC=x;render()}}).catch(()=>{})}
-      if(STAT&&STAT.at===j.at)return;const first=!STAT;STAT=j;S.xl=new Map(Object.entries(j.xl));CAND.clear();SUB.clear();S.link='on';refreshFeed(first);
+      if(STAT&&STAT.at===j.at)return;
+      if(STAT&&document.hidden){const d=staticDiff(loadStatic.pending||STAT,j),all=staticDiff(STAT,j);loadStatic.pending=j;
+        if(all.length)document.title='('+new Set(all.map(x=>x[1])).size+') novi izidi · '+T0();if(d.length)NOTIF.show(notifyText(d));return}
+      applyStatic(j);
     }catch(e){if(!STAT){clearTimeout(t);setLink('slow')}}
   };
-  await go();liveX(S.cur);setInterval(()=>{if(document.hidden)return;go();liveX(S.cur)},60000);
+  loadStatic.go=go;await go();liveX(S.cur);
+  const loop=()=>setTimeout(async()=>{await go(true);if(!document.hidden)liveX(S.cur);loop()},document.hidden?60000:30000);loop();
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)return;document.title=T0();
+    if(loadStatic.pending){const j=loadStatic.pending;loadStatic.pending=null;setTimeout(()=>applyStatic(j),60)}else go(true)});
 }
+function T0(){return loadStatic.t0||(loadStatic.t0=document.title)}
+function applyStatic(j){const first=!STAT;STAT=j;S.xl=new Map(Object.entries(j.xl));CAND.clear();SUB.clear();S.link='on';refreshFeed(first)}
+/* what changed between two data.json versions, for the tab title and the notification */
+function staticDiff(a,b){const out=[];for(const sec of ['k2','xl'])for(const k in (b&&b[sec])||{}){const x=((a&&a[sec])||{})[k],y=b[sec][k];if(!x||x.rows!==y.rows)out.push([sec,k,y])}return out}
+function notifyText(d){
+  const r2=d.filter(([s,,y])=>s==='k2'&&/\|[1-9]\d*$/m.test(y.rows)).map(([,k,y])=>{const r=parseRows(y.rows,true)[0];if(!r||!r.zup.length)return null;const z=rankZ(r.zup)||1,c=[...r.zup].sort((a,b)=>b.gl-a.gl)[0];return r.naz+': '+c.naz+' '+pc(c.gl/z)}).filter(Boolean);
+  const n=new Set(d.map(x=>x[1])).size;
+  return (r2.length?'2. krog · '+r2.slice(0,3).join(' · ')+(r2.length>3?' …':''):'')+(r2.length&&n>r2.length?' · ':'')+(n>r2.length||!r2.length?'posodobljenih '+obcin(n):'');
+}
+const NOTIF={on:()=>{try{return localStorage.getItem('lv2026-notif')==='1'&&'Notification' in window&&Notification.permission==='granted'}catch(e){return false}},
+  show(txt){if(!this.on())return;try{const n=new Notification('LV2026 · novi izidi',{body:txt,tag:'lv2026',renotify:true});n.onclick=()=>{window.focus();n.close()}}catch(e){}},
+  paint(){const b=$('#notif');if(!b)return;const ok='Notification' in window;b.textContent=!ok?'ni podprto':Notification.permission==='denied'?'blokirana':this.on()?'vklopljena':'vklopi';b.classList.toggle('on',ok&&this.on());b.disabled=!ok||Notification.permission==='denied'}};
 /* static mode: freshen the open municipality straight from DVK's export through the site's own /dvk/ proxy; silent when unavailable */
 const LX=new Map();let lxFail=0;
 async function liveX(k){
@@ -1189,6 +1209,7 @@ addEventListener('resize',stickCols);if(window.ResizeObserver){const ro=new Resi
 /* ---- theme ---- */
 function setTheme(t){document.documentElement.dataset.lvtheme=t;document.querySelectorAll('#themes button').forEach(b=>{b.classList.toggle('on',b.dataset.th===t);b.setAttribute('aria-pressed',b.dataset.th===t)});try{localStorage.setItem('lv2026-theme',t)}catch(e){}}
 $('#themes').onclick=e=>{const b=e.target.closest('button');if(b)setTheme(b.dataset.th)};
+$('#notif').onclick=async()=>{if(!('Notification' in window))return;try{if(NOTIF.on()){localStorage.setItem('lv2026-notif','0')}else{const p=Notification.permission==='granted'?'granted':await Notification.requestPermission();localStorage.setItem('lv2026-notif',p==='granted'?'1':'0');if(p==='granted')new Notification('LV2026',{body:'Obvestila so vklopljena: ko pridejo novi izidi in zavihek ni odprt, dobiš obvestilo.',tag:'lv2026'})}}catch(e){}NOTIF.paint()};NOTIF.paint();
 const syncTheme=()=>{const t=document.documentElement.dataset.lvtheme,o=document.querySelector('#themes button.on');if(t&&(!o||o.dataset.th!==t))setTheme(t)};
 addEventListener('pageshow',syncTheme);setTimeout(syncTheme,300);setTimeout(syncTheme,1500);
 (()=>{let t='matrix';try{t=localStorage.getItem('lv2026-theme')||t}catch(e){}if(!['calm','matrix','amber','light'].includes(t))t='matrix';setTheme(t)})();
