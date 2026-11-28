@@ -145,7 +145,7 @@ details.sec>summary span{color:var(--dim);font-weight:400;letter-spacing:.04em}
 .tug.ghost span{opacity:.5;background-image:repeating-linear-gradient(135deg,transparent 0 4px,var(--bg) 4px 6px)!important}
 .tug.mini{height:7px;margin:2px 0}.tug.mini i{top:-2px;bottom:-2px;width:1px;margin-left:0}
 .tug-l{font-size:10px;color:var(--dim);margin-top:6px}
-.ro-k{margin-bottom:8px;grid-template-columns:repeat(3,1fr)!important}.ro-list{display:flex;flex-direction:column;gap:1px}
+.ro-k{margin-bottom:8px;grid-template-columns:repeat(auto-fit,minmax(130px,1fr))!important}.ro-list{display:flex;flex-direction:column;gap:1px}
 .ro-row{display:grid;grid-template-columns:minmax(90px,1.1fr) minmax(0,1.3fr) auto minmax(60px,1fr) auto minmax(0,1.3fr);gap:8px;align-items:center;background:none;border:0;border-bottom:1px solid var(--line);color:var(--txt);font:inherit;font-size:11px;padding:5px 2px;text-align:left;cursor:pointer}
 .ro-row:hover{background:color-mix(in srgb,var(--g) 6%,transparent)}.ro-n{font-weight:700}.ro-pa,.ro-pb{font-variant-numeric:tabular-nums;white-space:nowrap}.ro-pa:empty,.ro-pb:empty{display:none}.ro-a{text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ro-b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media(max-width:600px){.ro-row{grid-template-columns:1fr auto auto 1fr;row-gap:3px}.ro-n{grid-column:1/-1}.ro-row .tug{grid-column:1/-1;order:3}.ro-a{text-align:left}.ro-b{text-align:right}}
@@ -633,6 +633,10 @@ function render(){
       <div class="kpi"><b class="amb-t">${K(ro.length,"int")}</b><small>drugi krog</small></div>
       <div class="kpi"><b style="color:var(--dim)">${K(A.length-rep.length,"int")}</b><small>brez izidov</small></div>
      </div>
+     ${(()=>{const E=[];let open=0;A.forEach(m=>{if(!m.zt)return;if(m.zup[0].prc>.5||!m.zup[1]){E.push([m.zup[0],1]);return}const P=pair(m);if(P&&P.res&&!P.tie)E.push([P.A.c.gl>P.B.c.gl?P.A.c:P.B.c,2]);else open++});
+       if(!E.length)return '';const G=new Map();E.forEach(([c,r])=>{const g=group(c.pred),e=G.get(g.l)||[0,0,g.c];e[0]++;if(r===2)e[1]++;G.set(g.l,e)});const T=[...G.entries()].sort((a,b)=>b[1][0]-a[1][0]),mx=T[0][1][0],k2n=E.filter(x=>x[1]===2).length;
+       return '<h3>IZVOLJENI ŽUPANI PO PREDLAGATELJU</h3><p class="note">'+E.length+' izvoljenih: '+(E.length-k2n)+' v 1. krogu'+(k2n?', '+k2n+' v 2. krogu':'')+(open?'; še odloča '+open+' '+(open===1?'občina':open===2?'občini':open<5?'občine':'občin')+' (2. krog)':'')+'.</p>'+
+         T.map(([l,[n,n2,c]])=>bar(l,n2?'od tega v 2. krogu: '+n2:'',n,mx,c,String(n))).join('')})()}
      <h3>VODILNI KANDIDATI PO PREDLAGATELJU</h3>
      <p class="note">Klik na stranko pokaže njene kandidate.</p>
      ${top.map(([k,[v,c]])=>pbar('z',k,bar(k,'',v,mx,c,v))).join('')}
@@ -649,7 +653,7 @@ function render(){
     const W=new Map();done.forEach(x=>{const w=x.P.A.c.gl>=x.P.B.c.gl?x.P.A:x.P.B,g=group(w.c.pred),e=W.get(g.l)||[0,g.c];e[0]++;W.set(g.l,e)});
     const tw=[...W.entries()].sort((a,b)=>b[1][0]-a[1][0]);
     $('#runoff').innerHTML='<div class="kpis ro-k"><div class="kpi"><b>'+done.length+' / '+RO.length+'</b><small>z izidi</small></div><div class="kpi"><b>'+(done.length?fl.length:'–')+'</b><small>preobratov</small></div>'+
-      (inc.length?'<div class="kpi"><b>'+(incD.length?incW.length+' / '+incD.length:'– / '+inc.length)+'</b><small>sedanji župani obdržali</small></div>':'')+'</div>'+
+      (inc.length?'<div class="kpi"><b>'+(incD.length?incW.length+' / '+incD.length:'– / '+inc.length)+'</b><small>sedanji župani obdržali</small></div>':'')+(()=>{const T=done.map(x=>x.m).filter(m=>m.k2.upr&&m.k2.glas&&m.upr&&m.glas);if(!T.length)return '';const u2=T.reduce((a,m)=>a+m.k2.glas,0)/T.reduce((a,m)=>a+m.k2.upr,0),u1=T.reduce((a,m)=>a+m.glas,0)/T.reduce((a,m)=>a+m.upr,0);return '<div class="kpi"><b>'+pc(u2)+'</b><small>udeležba v 2. krogu (1. krog '+pc(u1)+', '+pp(u2-u1)+')</small></div>'})()+'</div>'+
       '<p class="note">'+(done.length?'Najtesnejši najprej. Črta na sredini je 50 %; levo je prvouvrščeni iz 1. kroga.':'Vseh '+RO.length+' dvobojev, najtesnejši (po 1. krogu) najprej. Črtkano je razmerje med kandidatoma v 1. krogu; ko pridejo izidi, se črte napolnijo.')+'</p>'+
       '<div class="ro-list">'+RO.map(({m,P})=>'<button class="ro-row" data-m="'+key(m.naz)+'"><span class="ro-n">'+esc(m.naz)+(P.flip?' <span class="flip">PREOBRAT</span>':'')+'</span>'+
         '<span class="ro-a">'+esc(P.A.c.naz)+'</span><b class="ro-pa">'+(P.res?pc(P.p):'')+'</b>'+tug(P,true)+'<b class="ro-pb">'+(P.res?pc(1-P.p):'')+'</b><span class="ro-b">'+esc(P.B.c.naz)+'</span></button>').join('')+'</div>'+
@@ -800,7 +804,7 @@ function renderMuni(){
   h+=`<h3>ŽUPAN</h3>`;
   h+=m.zt?m.zup.map(c=>bar(c.naz,(c.pred||'')+(isM(key(m.naz),c.naz)?' · na položaju':'')+prej(m,c.naz),c.prc,1,group(c.pred).c,pc(c.prc)+' · '+fmt(c.gl),50)).join('')+`<p class="note" style="margin-top:10px">${m.zup[0].prc>.5?'Vodilni je trenutno nad 50 %.':'Nihče nad 50 % — kaže na drugi krog.'} Rdeča črta označuje 50 %.</p>`
     :m.zup.length?`<p class="note">${solo(m)?'En sam kandidat: izvoljen bo, če prejme večino veljavnih glasov, torej praktično zagotovo.':'Kandidati ('+m.zup.length+'); izidov še ni.'}</p>`+m.zup.map(c=>nrow(c.naz,(c.pred||'')+prej(m,c.naz),group(c.pred).c,solo(m),isM(key(m.naz),c.naz)?TM:'')).join(''):empty('Ni izidov.');
-  if(m.k2)h+=`<h3>ŽUPAN — DRUGI KROG</h3>`+(m.k2.zt?faceoff(m)+(m.k2.upr?`<p class="note" style="margin-top:10px">Udeležba v drugem krogu: ${pc(m.k2.glas/m.k2.upr)}.</p>`:''):(m.k2.zup.length>1?faceoff(m):empty('Čakam na izide drugega kroga.')));
+  if(m.k2)h+=`<h3>ŽUPAN — DRUGI KROG</h3>`+(m.k2.zt?faceoff(m)+(m.k2.upr&&m.k2.glas?`<p class="note" style="margin-top:10px">Udeležba: 2. krog ${pc(m.k2.glas/m.k2.upr)}`+(m.upr&&m.glas?` · 1. krog ${pc(m.glas/m.upr)} (${pp(m.k2.glas/m.k2.upr-m.glas/m.upr)})`:'')+`.</p>`:''):(m.k2.zup.length>1?faceoff(m):empty('Čakam na izide drugega kroga.')));
   h+=`<h3>OBČINSKI SVET</h3>`;
   const L=listTotals(m),seats=L.reduce((a,l)=>a+l.man,0);
   const anyV=m.svet.some(x=>x.gl>0||x.man>0||x.izv==1);
