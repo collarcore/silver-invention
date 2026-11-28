@@ -723,7 +723,7 @@ function renderMuni(){
   h+=`<h3>ŽUPAN</h3>`;
   h+=m.zt?m.zup.map(c=>bar(c.naz,(c.pred||'')+(isM(key(m.naz),c.naz)?' · na položaju':'')+prej(m,c.naz),c.prc,1,group(c.pred).c,pc(c.prc)+' · '+fmt(c.gl),50)).join('')+`<p class="note" style="margin-top:10px">${m.zup[0].prc>.5?'Vodilni je trenutno nad 50 %.':'Nihče nad 50 % — kaže na drugi krog.'} Rdeča črta označuje 50 %.</p>`
     :m.zup.length?`<p class="note">${solo(m)?'En sam kandidat: izvoljen bo, če prejme večino veljavnih glasov, torej praktično zagotovo.':'Kandidati ('+m.zup.length+'); izidov še ni.'}</p>`+m.zup.map(c=>nrow(c.naz,(c.pred||'')+prej(m,c.naz),group(c.pred).c,solo(m),isM(key(m.naz),c.naz)?TM:'')).join(''):empty('Ni izidov.');
-  if(m.k2)h+=`<h3>ŽUPAN — DRUGI KROG</h3>`+(m.k2.zt?m.k2.zup.map(c=>bar(c.naz,(c.pred||'')+prej(m,c.naz),c.prc,1,group(c.pred).c,pc(c.prc)+' · '+fmt(c.gl),50)).join('')+(m.k2.upr?`<p class="note" style="margin-top:10px">Udeležba v drugem krogu: ${pc(m.k2.glas/m.k2.upr)}.</p>`:''):empty('Čakam na izide drugega kroga.'));
+  if(m.k2)h+=`<h3>ŽUPAN — DRUGI KROG</h3>`+(m.k2.zt?m.k2.zup.map(c=>bar(c.naz,(c.pred||'')+prej(m,c.naz),c.prc,1,group(c.pred).c,pc(c.prc)+' · '+fmt(c.gl),50)).join('')+(m.k2.upr?`<p class="note" style="margin-top:10px">Udeležba v drugem krogu: ${pc(m.k2.glas/m.k2.upr)}.</p>`:''):(m.k2.zup.length?'<p class="note">Kandidata v drugem krogu (29. 11.); izidi bodo tu takoj, ko jih objavi DVK.</p>'+m.k2.zup.map(c=>nrow(c.naz,(c.pred||'')+prej(m,c.naz),group(c.pred).c)).join(''):empty('Čakam na izide drugega kroga.')));
   h+=`<h3>OBČINSKI SVET</h3>`;
   const L=listTotals(m),seats=L.reduce((a,l)=>a+l.man,0);
   const anyV=m.svet.some(x=>x.gl>0||x.man>0||x.izv==1);
