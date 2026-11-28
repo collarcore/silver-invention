@@ -139,7 +139,7 @@ details.sec>summary span{color:var(--dim);font-weight:400;letter-spacing:.04em}
 .fo-s b{font-size:13px;display:flex;gap:6px;align-items:center}.fo-s.r b{flex-direction:row-reverse}.fo-s b i{width:9px;height:9px;flex:none}
 .fo-s small{color:var(--dim);font-size:10.5px;overflow-wrap:anywhere}.fo-s em{font-style:normal;font-size:22px;font-weight:700;line-height:1.1;margin-top:2px}
 .fo-s .incs{font-size:10px;color:var(--g)}.fo-vs{align-self:center;color:var(--dim);font-size:11px;letter-spacing:.1em}
-.flip{color:var(--bg);background:var(--red);padding:1px 5px;font-size:9.5px;letter-spacing:.08em;font-weight:700}
+.flip.tie{background:var(--amb)}.flip{color:var(--bg);background:var(--red);padding:1px 5px;font-size:9.5px;letter-spacing:.08em;font-weight:700}
 .tug{position:relative;display:flex;height:14px;margin:4px 0;background:var(--line)}.tug span{height:100%;transition:width .6s}
 .tug i{position:absolute;left:50%;top:-3px;bottom:-3px;width:2px;margin-left:-1px;background:var(--txt)}
 .tug.ghost span{opacity:.5;background-image:repeating-linear-gradient(135deg,transparent 0 4px,var(--bg) 4px 6px)!important}
@@ -655,7 +655,7 @@ function render(){
     $('#runoff').innerHTML='<div class="kpis ro-k"><div class="kpi"><b>'+done.length+' / '+RO.length+'</b><small>z izidi</small></div><div class="kpi"><b>'+(done.length?fl.length:'–')+'</b><small>preobratov</small></div>'+
       (inc.length?'<div class="kpi"><b>'+(incD.length?incW.length+' / '+incD.length:'– / '+inc.length)+'</b><small>sedanji župani obdržali</small></div>':'')+(()=>{const T=done.map(x=>x.m).filter(m=>m.k2.upr&&m.k2.glas&&m.upr&&m.glas);if(!T.length)return '';const u2=T.reduce((a,m)=>a+m.k2.glas,0)/T.reduce((a,m)=>a+m.k2.upr,0),u1=T.reduce((a,m)=>a+m.glas,0)/T.reduce((a,m)=>a+m.upr,0);return '<div class="kpi"><b>'+pc(u2)+'</b><small>udeležba v 2. krogu (1. krog '+pc(u1)+', '+pp(u2-u1)+')</small></div>'})()+'</div>'+
       '<p class="note">'+(done.length?'Najtesnejši najprej. Črta na sredini je 50 %; levo je prvouvrščeni iz 1. kroga.':'Vseh '+RO.length+' dvobojev, najtesnejši (po 1. krogu) najprej. Črtkano je razmerje med kandidatoma v 1. krogu; ko pridejo izidi, se črte napolnijo.')+'</p>'+
-      '<div class="ro-list">'+RO.map(({m,P})=>'<button class="ro-row" data-m="'+key(m.naz)+'"><span class="ro-n">'+esc(m.naz)+(P.flip?' <span class="flip">PREOBRAT</span>':'')+'</span>'+
+      '<div class="ro-list">'+RO.map(({m,P})=>'<button class="ro-row" data-m="'+key(m.naz)+'"><span class="ro-n">'+esc(m.naz)+(P.flip?' <span class="flip">PREOBRAT</span>':P.tie?' <span class="flip tie">IZENAČENO</span>':'')+'</span>'+
         '<span class="ro-a">'+esc(P.A.c.naz)+'</span><b class="ro-pa">'+(P.res?pc(P.p):'')+'</b>'+tug(P,true)+'<b class="ro-pb">'+(P.res?pc(1-P.p):'')+'</b><span class="ro-b">'+esc(P.B.c.naz)+'</span></button>').join('')+'</div>'+
       (tw.length?'<h3>NOVI ŽUPANI PO PREDLAGATELJU (2. KROG)</h3>'+tw.map(([l,[n,c]])=>bar(l,'',n,done.length,c,String(n))).join(''):'');
   } else {
@@ -739,7 +739,7 @@ function faceoff(m){
     (P.res?'<em>'+pc(x.c.gl/m.k2.zt)+'</em><small>'+fmt(x.c.gl)+' glasov</small>':'')+
     '<small class="r1">1. krog: '+(x.f?pc(x.f.prc)+' · '+fmt(x.f.gl):'–')+'</small>'+
     (isM(k,x.c.naz)?'<span class="incs">na položaju</span>':'')+'<small>'+esc(x.c.pred||'')+esc(prej(m,x.c.naz))+'</small></div>';
-  return '<div class="fo">'+side(P.A,'l',P.ca)+'<div class="fo-vs">'+(P.flip?'<span class="flip">PREOBRAT</span>':'vs')+'</div>'+side(P.B,'r',P.cb)+'</div>'+tug(P)+
+  return '<div class="fo">'+side(P.A,'l',P.ca)+'<div class="fo-vs">'+(P.flip?'<span class="flip">PREOBRAT</span>':P.tie?'<span class="flip tie">IZENAČENO</span>':'vs')+'</div>'+side(P.B,'r',P.cb)+'</div>'+tug(P)+
     (P.res?(P.f2!=null?'<div class="tug-l"><span>1. krog med njima</span></div>'+tug({...P,res:false},true):''):
       '<p class="note">Črtkano: razmerje med njima v 1. krogu ('+pc(P.f2)+' : '+pc(1-P.f2)+'). Izidi bodo tu takoj, ko jih objavi DVK.</p>')+
     (P.other>.005?'<p class="note">Drugi kandidati so v 1. krogu dobili '+pc(P.other)+' glasov; o izidu odločajo njihovi volivci in udeležba.</p>':'');
@@ -763,7 +763,7 @@ function renderMap(tur){
     else if(S.mode==='svet'){const g=gS(m);if(g)f=g.c}
     else if(S.mode==='blok'){const W=m.tip===2&&m.full?listTotals(m).filter(l=>l.man):m.tip===1?[...m.svet.filter(c=>c.izv==1).reduce((a,c)=>{a.set(c.pred||'',(a.get(c.pred||'')||0)+1);return a},new Map())].map(([naz,man])=>({naz,man})):[];
       const n=W.reduce((a,l)=>a+l.man,0);if(n){const t=blocSums(W,p.dataset.k),mj=Math.floor(n/2)+1;if(t.L>=mj)f=blocColor('L');else if(t.D>=mj)f=blocColor('D');else{f='var(--amb)';o=.3+.7*Math.min(t.X/n/.6,1)}}}
-    else if(S.mode==='k2'){const P=pair(m);if(P&&P.res){f=P.flip?'var(--red)':'var(--g)';o=.35+.65*Math.min(Math.abs(P.p-.5)/.25,1)}else if(ro(m)){f='var(--amb)';o=.75}}
+    else if(S.mode==='k2'){const P=pair(m);if(P&&P.res&&P.tie){f='var(--amb)';o=1}else if(P&&P.res){f=P.flip?'var(--red)':'var(--g)';o=.35+.65*Math.min(Math.abs(P.p-.5)/.25,1)}else if(ro(m)){f='var(--amb)';o=.75}}
     else if(S.mode==='kand'){const n=m.zup.length;if(n===1)f='var(--amb)';else if(n>1){f='var(--g)';o=n===2?.28:n===3?.5:n<6?.75:1}}
     else if(solo(m)){if(S.mode==='zup')f='var(--g)';else if(S.mode==='pred')f=gP(m).c}
     else if(m.zt){
