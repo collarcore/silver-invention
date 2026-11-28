@@ -134,6 +134,21 @@ details.sec>summary span{color:var(--dim);font-weight:400;letter-spacing:.04em}
 .blg span{display:inline-flex;align-items:center;gap:5px}.blg i{width:9px;height:9px;display:inline-block}
 .chips.pre button{border-style:dashed}
 .note.small{font-size:10px}
+.fo{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:start;margin:4px 0 8px}
+.fo-s{display:flex;flex-direction:column;gap:2px;min-width:0}.fo-s.r{text-align:right;align-items:flex-end}
+.fo-s b{font-size:13px;display:flex;gap:6px;align-items:center}.fo-s.r b{flex-direction:row-reverse}.fo-s b i{width:9px;height:9px;flex:none}
+.fo-s small{color:var(--dim);font-size:10.5px;overflow-wrap:anywhere}.fo-s em{font-style:normal;font-size:22px;font-weight:700;line-height:1.1;margin-top:2px}
+.fo-s .incs{font-size:10px;color:var(--g)}.fo-vs{align-self:center;color:var(--dim);font-size:11px;letter-spacing:.1em}
+.flip{color:var(--bg);background:var(--red);padding:1px 5px;font-size:9.5px;letter-spacing:.08em;font-weight:700}
+.tug{position:relative;display:flex;height:14px;margin:4px 0;background:var(--line)}.tug span{height:100%;transition:width .6s}
+.tug i{position:absolute;left:50%;top:-3px;bottom:-3px;width:2px;margin-left:-1px;background:var(--txt)}
+.tug.ghost span{opacity:.5;background-image:repeating-linear-gradient(135deg,transparent 0 4px,var(--bg) 4px 6px)!important}
+.tug.mini{height:7px;margin:2px 0}.tug.mini i{top:-2px;bottom:-2px;width:1px;margin-left:0}
+.tug-l{font-size:10px;color:var(--dim);margin-top:6px}
+.ro-k{margin-bottom:8px;grid-template-columns:repeat(3,1fr)!important}.ro-list{display:flex;flex-direction:column;gap:1px}
+.ro-row{display:grid;grid-template-columns:minmax(90px,1.1fr) minmax(0,1.3fr) auto minmax(60px,1fr) auto minmax(0,1.3fr);gap:8px;align-items:center;background:none;border:0;border-bottom:1px solid var(--line);color:var(--txt);font:inherit;font-size:11px;padding:5px 2px;text-align:left;cursor:pointer}
+.ro-row:hover{background:color-mix(in srgb,var(--g) 6%,transparent)}.ro-n{font-weight:700}.ro-pa,.ro-pb{font-variant-numeric:tabular-nums;white-space:nowrap}.ro-pa:empty,.ro-pb:empty{display:none}.ro-a{text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ro-b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media(max-width:600px){.ro-row{grid-template-columns:1fr auto auto 1fr;row-gap:3px}.ro-n{grid-column:1/-1}.ro-row .tug{grid-column:1/-1;order:3}.ro-a{text-align:left}.ro-b{text-align:right}}
 .bbar i.est{background:repeating-linear-gradient(135deg,var(--bc) 0 3px,color-mix(in srgb,var(--bc) 35%,var(--bg)) 3px 6px)!important}
 .chips.oc{font-size:11px;color:var(--dim);align-items:center;margin-top:6px}.chips.oc button{padding:2px 8px;font-size:11px}
 .est-l{margin:6px 0;font-size:11px}.est-l summary{cursor:pointer;color:var(--dim)}.est-l p{margin:5px 0}.est-l p.off{opacity:.45}.est-l span{color:var(--dim)}.est-l small{color:var(--dim)}
@@ -407,7 +422,7 @@ async function loadStatic(t){
     if(loadStatic.pending){const j=loadStatic.pending;loadStatic.pending=null;setTimeout(()=>applyStatic(j),60)}else go(true)});
 }
 function T0(){return loadStatic.t0||(loadStatic.t0=document.title)}
-function applyStatic(j){const first=!STAT;STAT=j;S.xl=new Map(Object.entries(j.xl));CAND.clear();SUB.clear();S.link='on';refreshFeed(first)}
+function applyStatic(j){const first=!STAT;if(first&&!S.modeSet&&j.k2&&Object.keys(j.k2).length&&localISO()<'2026-12-01'){S.mode='k2';document.querySelectorAll('[data-mode]').forEach(b=>b.classList.toggle('on',b.dataset.mode==='k2'))}STAT=j;S.xl=new Map(Object.entries(j.xl));CAND.clear();SUB.clear();S.link='on';refreshFeed(first)}
 /* what changed between two data.json versions, for the tab title and the notification */
 function staticDiff(a,b){const out=[];for(const sec of ['k2','xl'])for(const k in (b&&b[sec])||{}){const x=((a&&a[sec])||{})[k],y=b[sec][k];if(!x||x.rows!==y.rows)out.push([sec,k,y])}return out}
 function notifyText(d){
@@ -626,10 +641,25 @@ function render(){
      ${(()=>{const p=lead.filter(x=>group(x.a.pred).l!=='NEODVISNI IN LOKALNE LISTE').length,n=lead.length-p;return bar('S podporo državne stranke','',p,lead.length,'var(--g)',p+' · '+pc(p/lead.length))+bar('Neodvisni in lokalne liste','',n,lead.length,tint('#9aa3a0'),n+' · '+pc(n/lead.length))})()}`;
   }
 
+  const RO=A.map(m=>({m,P:pair(m)})).filter(x=>x.P);
+  if(RO.length){
+    const done=RO.filter(x=>x.P.res),fl=done.filter(x=>x.P.flip),closeness=x=>x.P.res?Math.abs(x.P.p-.5):x.P.f2!=null?Math.abs(x.P.f2-.5):1;
+    RO.sort((a,b)=>(b.P.res-a.P.res)||closeness(a)-closeness(b));
+    const inc=RO.filter(x=>[x.P.A,x.P.B].some(y=>isM(key(x.m.naz),y.c.naz))),incD=inc.filter(x=>x.P.res),incW=incD.filter(x=>{const w=x.P.A.c.gl>=x.P.B.c.gl?x.P.A:x.P.B;return isM(key(x.m.naz),w.c.naz)});
+    const W=new Map();done.forEach(x=>{const w=x.P.A.c.gl>=x.P.B.c.gl?x.P.A:x.P.B,g=group(w.c.pred),e=W.get(g.l)||[0,g.c];e[0]++;W.set(g.l,e)});
+    const tw=[...W.entries()].sort((a,b)=>b[1][0]-a[1][0]);
+    $('#runoff').innerHTML='<div class="kpis ro-k"><div class="kpi"><b>'+done.length+' / '+RO.length+'</b><small>z izidi</small></div><div class="kpi"><b>'+(done.length?fl.length:'–')+'</b><small>preobratov</small></div>'+
+      (inc.length?'<div class="kpi"><b>'+(incD.length?incW.length+' / '+incD.length:'– / '+inc.length)+'</b><small>sedanji župani obdržali</small></div>':'')+'</div>'+
+      '<p class="note">'+(done.length?'Najtesnejši najprej. Črta na sredini je 50 %; levo je prvouvrščeni iz 1. kroga.':'Vseh '+RO.length+' dvobojev, najtesnejši (po 1. krogu) najprej. Črtkano je razmerje med kandidatoma v 1. krogu; ko pridejo izidi, se črte napolnijo.')+'</p>'+
+      '<div class="ro-list">'+RO.map(({m,P})=>'<button class="ro-row" data-m="'+key(m.naz)+'"><span class="ro-n">'+esc(m.naz)+(P.flip?' <span class="flip">PREOBRAT</span>':'')+'</span>'+
+        '<span class="ro-a">'+esc(P.A.c.naz)+'</span><b class="ro-pa">'+(P.res?pc(P.p):'')+'</b>'+tug(P,true)+'<b class="ro-pb">'+(P.res?pc(1-P.p):'')+'</b><span class="ro-b">'+esc(P.B.c.naz)+'</span></button>').join('')+'</div>'+
+      (tw.length?'<h3>NOVI ŽUPANI PO PREDLAGATELJU (2. KROG)</h3>'+tw.map(([l,[n,c]])=>bar(l,'',n,done.length,c,String(n))).join(''):'');
+  } else {
   const r=ro.filter(x=>x.b).map(x=>({...x,d:x.a.prc-x.b.prc})).sort((a,b)=>a.d-b.d).slice(0,12);
   $('#runoff').innerHTML=!r.length?empty(rep.length?'Trenutno ni občin, kjer bi vodilni imel manj kot 50 %.':''):
     `<p class="note">Občine, kjer vodilni nima večine; najtesnejše razlike najprej.</p><div class="cards">`+
     r.map(x=>`<button class="card amb" data-m="${key(x.m.naz)}"><b>${esc(x.m.naz)} · razlika ${(x.d*100).toFixed(1).replace('.',',')}\u00a0o.\u00a0t.</b>${esc(x.a.naz)} ${pc(x.a.prc)}${isM(key(x.m.naz),x.a.naz)?' <span class="incs">[na položaju]</span>':''}<br><span>${esc(x.b.naz)} ${pc(x.b.prc)}${isM(key(x.m.naz),x.b.naz)?' <span class="incs">[na položaju]</span>':''}</span></button>`).join('')+`</div>`;
+  }
 
   const seats=new Map();let tot=0,nm=0;const absM=[];
   A.filter(m=>m.full).forEach(m=>{const L=listTotals(m).filter(l=>l.man);if(L.length){nm++;const T=L.reduce((a,l)=>a+l.man,0),t=L.reduce((b,l)=>l.man>b.man?l:b);if(t.man*2>T)absM.push({m,t,T})}L.forEach(l=>{const g=group(l.naz),e=seats.get(g.l)||[0,g.c];e[0]+=l.man;seats.set(g.l,e);tot+=l.man})});
@@ -683,6 +713,33 @@ function renderRec(A,rep,tur){
     const W=P.map(y=>({m:y.m,n:y.L.filter(l=>l.man).length})).filter(y=>y.n);if(W.length){x=W.reduce((b,y)=>y.n>b.n?y:b);c.push(rcard('r8','NAJBOLJ RAZDROBLJEN SVET',x.m,listn(x.n)+' z mandati',''))}}
   $('#rec').innerHTML='<p class="note">Trenutno stanje; rekordi se med štetjem spreminjajo.</p><div class="cards">'+c.join('')+'</div>';
 }
+/* runoff pair: both candidates with their first-round result; A = first-round leader */
+function pair(m){
+  if(!m.k2||m.k2.zup.length<2)return null;
+  const r1=new Map(m.zup.map(c=>[key(c.naz),c])),C=m.k2.zup.map(c=>({c,f:r1.get(key(c.naz))||null}));
+  C.sort((a,b)=>((b.f&&b.f.gl)||0)-((a.f&&a.f.gl)||0));
+  const [A,B]=C,res=m.k2.zt>0,f2=A.f&&B.f&&(A.f.gl+B.f.gl)?A.f.gl/(A.f.gl+B.f.gl):null,p=res?A.c.gl/m.k2.zt:null;
+  let ca=group(A.c.pred).c,cb=group(B.c.pred).c;if(ca===cb){ca='var(--amb)';cb='var(--cy)'}
+  const other=m.zt?m.zup.filter(c=>c!==A.f&&c!==B.f).reduce((s,c)=>s+c.gl,0)/m.zt:0;
+  return {A,B,res,p,f2,ca,cb,flip:res&&A.c.gl<B.c.gl,tie:res&&A.c.gl===B.c.gl,other};
+}
+/* tug-of-war bar: solid when the runoff has votes, otherwise the first round between the two (striped) */
+function tug(P,mini){
+  const v=P.res?P.p:P.f2;if(v==null)return '';
+  return '<div class="tug'+(P.res?'':' ghost')+(mini?' mini':'')+'"><span style="width:'+(v*100).toFixed(2)+'%;background:'+P.ca+'"></span><span style="width:'+((1-v)*100).toFixed(2)+'%;background:'+P.cb+'"></span><i></i></div>';
+}
+function faceoff(m){
+  const P=pair(m);if(!P)return '';const k=key(m.naz);
+  /* result first, so both percentages sit on the same line; details below */
+  const side=(x,cl,col)=>'<div class="fo-s '+cl+'"><b><i style="background:'+col+'"></i>'+esc(x.c.naz)+'</b>'+
+    (P.res?'<em>'+pc(x.c.gl/m.k2.zt)+'</em><small>'+fmt(x.c.gl)+' glasov</small>':'')+
+    '<small class="r1">1. krog: '+(x.f?pc(x.f.prc)+' · '+fmt(x.f.gl):'–')+'</small>'+
+    (isM(k,x.c.naz)?'<span class="incs">na položaju</span>':'')+'<small>'+esc(x.c.pred||'')+esc(prej(m,x.c.naz))+'</small></div>';
+  return '<div class="fo">'+side(P.A,'l',P.ca)+'<div class="fo-vs">'+(P.flip?'<span class="flip">PREOBRAT</span>':'vs')+'</div>'+side(P.B,'r',P.cb)+'</div>'+tug(P)+
+    (P.res?(P.f2!=null?'<div class="tug-l"><span>1. krog med njima</span></div>'+tug({...P,res:false},true):''):
+      '<p class="note">Črtkano: razmerje med njima v 1. krogu ('+pc(P.f2)+' : '+pc(1-P.f2)+'). Izidi bodo tu takoj, ko jih objavi DVK.</p>')+
+    (P.other>.005?'<p class="note">Drugi kandidati so v 1. krogu dobili '+pc(P.other)+' glasov; o izidu odločajo njihovi volivci in udeležba.</p>':'');
+}
 const maj=m=>m.tip===1&&m.svet.length>0&&!m.svet.some(x=>x.man);
 const leadList=m=>{if(maj(m))return null;const L=listTotals(m);return L.length&&L[0].gl?L[0]:null};
 const marg=m=>m.zup[0].prc-(m.zup[1]?m.zup[1].prc:0);
@@ -702,7 +759,7 @@ function renderMap(tur){
     else if(S.mode==='svet'){const g=gS(m);if(g)f=g.c}
     else if(S.mode==='blok'){const W=m.tip===2&&m.full?listTotals(m).filter(l=>l.man):m.tip===1?[...m.svet.filter(c=>c.izv==1).reduce((a,c)=>{a.set(c.pred||'',(a.get(c.pred||'')||0)+1);return a},new Map())].map(([naz,man])=>({naz,man})):[];
       const n=W.reduce((a,l)=>a+l.man,0);if(n){const t=blocSums(W,p.dataset.k),mj=Math.floor(n/2)+1;if(t.L>=mj)f=blocColor('L');else if(t.D>=mj)f=blocColor('D');else{f='var(--amb)';o=.3+.7*Math.min(t.X/n/.6,1)}}}
-    else if(S.mode==='k2'){if(m.k2&&m.k2.zt){f='var(--g)';o=.35+.65*Math.min(Math.max(m.k2.zup[0].prc-.5,0)/.25,1)}else if(ro(m))f='var(--amb)'}
+    else if(S.mode==='k2'){const P=pair(m);if(P&&P.res){f=P.flip?'var(--red)':'var(--g)';o=.35+.65*Math.min(Math.abs(P.p-.5)/.25,1)}else if(ro(m)){f='var(--amb)';o=.75}}
     else if(S.mode==='kand'){const n=m.zup.length;if(n===1)f='var(--amb)';else if(n>1){f='var(--g)';o=n===2?.28:n===3?.5:n<6?.75:1}}
     else if(solo(m)){if(S.mode==='zup')f='var(--g)';else if(S.mode==='pred')f=gP(m).c}
     else if(m.zt){
@@ -724,7 +781,7 @@ function renderMap(tur){
     :S.mode==='pred'?'<span>predlagatelj vodilnega kandidata za župana:</span>'+cats()
     :S.mode==='svet'?'<span>lista z največ glasovi za občinski svet; pri večinskem sistemu predlagatelj največ izvoljenih (pred izidi: kandidatov brez protikandidata):</span>'+cats()
     :S.mode==='blok'?sw(blocColor('L'),'levi blok ima večino sam')+sw(blocColor('D'),'desni blok ima večino sam')+sw('var(--amb)','odločajo lokalne liste (močnejša barva = več neuvrščenih mandatov)')+(S.oc?'<span>vključene ocene lokalnih list ('+(S.oc===2?'zanesljive':'vse')+')</span>':'')+nd
-    :S.mode==='k2'?sw('var(--g)','izid drugega kroga (močnejša barva = večja prednost)')+sw('var(--amb)','drugi krog, še brez izida')+sw('var(--nd)','brez drugega kroga')
+    :S.mode==='k2'?sw('var(--g)','vodi prvouvrščeni iz 1. kroga')+sw('var(--red)','preobrat: vodi drugouvrščeni')+sw('var(--amb)','drugi krog, še brez izida')+sw('var(--nd)','brez drugega kroga')+'<span>močnejša barva = večja prednost</span>'
     :sw('var(--g)','vodilni nad 50 % ali brez protikandidata')+sw('var(--amb)','kaže na drugi krog')+nd;
   S.natU=natU;renderInfo();
 }
@@ -743,7 +800,7 @@ function renderMuni(){
   h+=`<h3>ŽUPAN</h3>`;
   h+=m.zt?m.zup.map(c=>bar(c.naz,(c.pred||'')+(isM(key(m.naz),c.naz)?' · na položaju':'')+prej(m,c.naz),c.prc,1,group(c.pred).c,pc(c.prc)+' · '+fmt(c.gl),50)).join('')+`<p class="note" style="margin-top:10px">${m.zup[0].prc>.5?'Vodilni je trenutno nad 50 %.':'Nihče nad 50 % — kaže na drugi krog.'} Rdeča črta označuje 50 %.</p>`
     :m.zup.length?`<p class="note">${solo(m)?'En sam kandidat: izvoljen bo, če prejme večino veljavnih glasov, torej praktično zagotovo.':'Kandidati ('+m.zup.length+'); izidov še ni.'}</p>`+m.zup.map(c=>nrow(c.naz,(c.pred||'')+prej(m,c.naz),group(c.pred).c,solo(m),isM(key(m.naz),c.naz)?TM:'')).join(''):empty('Ni izidov.');
-  if(m.k2)h+=`<h3>ŽUPAN — DRUGI KROG</h3>`+(m.k2.zt?m.k2.zup.map(c=>bar(c.naz,(c.pred||'')+prej(m,c.naz),c.prc,1,group(c.pred).c,pc(c.prc)+' · '+fmt(c.gl),50)).join('')+(m.k2.upr?`<p class="note" style="margin-top:10px">Udeležba v drugem krogu: ${pc(m.k2.glas/m.k2.upr)}.</p>`:''):(m.k2.zup.length?'<p class="note">Kandidata v drugem krogu (29. 11.); izidi bodo tu takoj, ko jih objavi DVK.</p>'+m.k2.zup.map(c=>nrow(c.naz,(c.pred||'')+prej(m,c.naz),group(c.pred).c)).join(''):empty('Čakam na izide drugega kroga.')));
+  if(m.k2)h+=`<h3>ŽUPAN — DRUGI KROG</h3>`+(m.k2.zt?faceoff(m)+(m.k2.upr?`<p class="note" style="margin-top:10px">Udeležba v drugem krogu: ${pc(m.k2.glas/m.k2.upr)}.</p>`:''):(m.k2.zup.length>1?faceoff(m):empty('Čakam na izide drugega kroga.')));
   h+=`<h3>OBČINSKI SVET</h3>`;
   const L=listTotals(m),seats=L.reduce((a,l)=>a+l.man,0);
   const anyV=m.svet.some(x=>x.gl>0||x.man>0||x.izv==1);
